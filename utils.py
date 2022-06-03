@@ -41,7 +41,6 @@ class Normalize:
         return x.sub_(mean).div_(std)
 
     def inverse(self, x):
-        print(x.size(), self.mean.size())
         mean = self.mean.to(x.device).view(-1, 1)
         std = self.std.to(x.device).view(-1, 1)
         return x.mul_(std).add_(mean)
@@ -129,13 +128,16 @@ def balanced_accuracy(Y, Y_pred):
 def mae(Y, Y_pred):
     return mean_absolute_error(Y, Y_pred)
 
-def rocauc(Y, Y_pred):
-    try:
-        return roc_auc_score(Y, Y_pred.T)
-    except Exception as e:
-        print(Y, Y_pred)
-        print(e)
-        return 0
+class ROCAUC():
+    def __init__(self, type='micro'):
+        self.type = type
+        
+    
+    def __call__(self, Y, Y_pred):
+        try:
+            return roc_auc_score(Y, Y_pred.T, average=self.type)
+        except Exception as e:
+            return 0
 
 
 def count_parameters_in_MB(model):
@@ -282,7 +284,7 @@ class BatchGen(object):
                 # sort entirely
                 X = self.data[0]
                 y = self.data[1]
-                (X, y, self.names, self.ts) = common_utils.sort_and_shuffle([X, y, self.names, self.ts], B)
+                (X, y, self.names, self.ts) = sort_and_shuffle([X, y, self.names, self.ts], B)
                 self.data = [X, y]
 
             self.data[1] = np.array(self.data[1])  # this is important for Keras
@@ -341,3 +343,31 @@ def pad_zeros(arr, min_length=None):
         ret = [np.concatenate([x, np.zeros((min_length - x.shape[0],) + x.shape[1:], dtype=dtype)], axis=0)
                for x in ret]
     return np.array(ret)
+
+def sort_and_shuffle(data, batch_size):
+    """ Sort data by the length and then make batches and shuffle them.
+        data is tuple (X1, X2, ..., Xn) all of them have the same length.
+        Usually data = (X, y).
+    """
+    assert len(data) >= 2
+    data = list(zip(*data))
+
+    random.shuffle(data)
+
+    old_size = len(data)
+    rem = old_size % batch_size
+    head = data[:old_size - rem]
+    tail = data[old_size - rem:]
+    data = []
+
+    head.sort(key=(lambda x: x[0].shape[0]))
+
+    mas = [head[i: i+batch_size] for i in range(0, len(head), batch_size)]
+    random.shuffle(mas)
+
+    for x in mas:
+        data += x
+    data += tail
+
+    data = list(zip(*data))
+    return data

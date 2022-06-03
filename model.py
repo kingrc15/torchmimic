@@ -20,10 +20,10 @@ class LSTM_Model(nn.Module):
         )
         
     def forward(self, x):
-        # 2, 1244, 128
-        # 256, 1244, 76
-        h0 = torch.zeros((2, x.size(1), self.hidden_dim)).float()
-        c0 = torch.zeros((2, x.size(1), self.hidden_dim)).float()
+        device = x.device
+        
+        h0 = torch.zeros((2, x.size(1), self.hidden_dim), device=device).float()
+        c0 = torch.zeros((2, x.size(1), self.hidden_dim), device=device).float()
 
         z, (hn, cn) = self.lstm_layer(x, (h0, c0))
         z = self.final_layer(z)
