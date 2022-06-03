@@ -130,4 +130,6 @@ dmypy.json
 
 # Experiment Folders
 /exp
+/exp/*
+/exp/**
 
