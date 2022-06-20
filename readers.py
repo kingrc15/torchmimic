@@ -3,19 +3,17 @@ import numpy as np
 import random
 import torch
 
+from torch.utils.data import Dataset
+from torchvision import transforms
 
 class Reader(object):
     def __init__(self, dataset_dir, listfile=None):
+        self._dataset_dir = dataset_dir
         self._current_index = 0
         if listfile is None:
             listfile_path = os.path.join(dataset_dir, "listfile.csv")
-            self._dataset_dir = dataset_dir
         else:
-            listfile_path = os.path.join(dataset_dir, listfile)
-            if "train" in listfile:
-                self._dataset_dir = os.path.join(dataset_dir, "train")
-            else:
-                self._dataset_dir = os.path.join(dataset_dir, "test")
+            listfile_path = listfile
         with open(listfile_path, "r") as lfile:
             self._data = lfile.readlines()
         self._listfile_header = self._data[0]
@@ -143,8 +141,6 @@ class InHospitalMortalityReader(Reader):
         t = self._period_length
         y = self._data[index][1]
         (X, header) = self._read_timeseries(name)
-        
-        print(name, t, y, X, header)
 
         return {"X": X,
                 "t": t,
@@ -219,8 +215,6 @@ class PhenotypingReader(Reader):
         Reader.__init__(self, dataset_dir, listfile)
         self._data = [line.split(',') for line in self._data]
         self._data = [(mas[0], float(mas[1]), list(map(int, mas[2:]))) for mas in self._data]
-        
-        self.used_features = ['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen', 'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']
 
     def _read_timeseries(self, ts_filename):
         ret = []
@@ -249,26 +243,25 @@ class PhenotypingReader(Reader):
                 Names of the columns. The ordering of the columns is always the same.
             name: Name of the sample.
         """
+        if index < 0 or index >= len(self._data):
+            raise ValueError("Index must be from 0 (inclusive) to number of lines (exclusive).")
+
         name = self._data[index][0]
         t = self._data[index][1]
         y = self._data[index][2]
         (X, header) = self._read_timeseries(name)
 
-        # print(X, t, y, header, name)
-        return {
-            "X": X,
-            "t": t,
-            "y": y,
-            "header": header,
-            "name": name
-        }
-    
+        return {"X": X,
+                "t": t,
+                "y": y,
+                "header": header,
+                "name": name}
+
     def __len__(self):
         return self.get_number_of_examples()
     
     def __getitem__(self, index):
         return self.read_example(index)
-
 
 class MultitaskReader(Reader):
     def __init__(self, dataset_dir, listfile=None):

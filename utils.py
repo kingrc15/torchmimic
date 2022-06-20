@@ -16,6 +16,10 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+def get_free_gpu():
+    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
+    memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+    return int(np.argmax(memory_available))
 
 def remove_nans(x):
     return x[~np.isnan(x).any(axis=1)]
@@ -36,13 +40,13 @@ class Normalize:
         self.std = torch.as_tensor(std)
 
     def __call__(self, x):
-        mean = self.mean.to(x.device).view(-1, 1)
-        std = self.std.to(x.device).view(-1, 1)
+        mean = self.mean.to(x.device).expand_as(x)
+        std = self.std.to(x.device).expand_as(x)
         return x.sub_(mean).div_(std)
 
     def inverse(self, x):
-        mean = self.mean.to(x.device).view(-1, 1)
-        std = self.std.to(x.device).view(-1, 1)
+        mean = self.mean.to(x.device).expand_as(x)
+        std = self.std.to(x.device).expand_as(x)
         return x.mul_(std).add_(mean)
 
 
@@ -55,6 +59,9 @@ class Preprocess:
             x = step(x)
 
         return x
+    
+def frame_count(frame_size, window_size, stride):
+    return max(int(((frame_size - (window_size - 1) - 1) / stride) + 1),0)
 
 
 class BlandAltman:
@@ -134,10 +141,7 @@ class ROCAUC():
         
     
     def __call__(self, Y, Y_pred):
-        try:
-            return roc_auc_score(Y, Y_pred.T, average=self.type)
-        except Exception as e:
-            return 0
+        return roc_auc_score(Y, Y_pred, multi_class='ovr', average=self.type)
 
 
 def count_parameters_in_MB(model):
@@ -145,20 +149,15 @@ def count_parameters_in_MB(model):
 
 
 class AverageMeter:
-    """docstring for AverageMeter"""
-
     def __init__(self):
-        """AverageMeter initialization"""
         self.reset()
 
     def reset(self):
-        """AverageMeter set initial values for class parameters"""
         self.avg = 0
         self.sum = 0
         self.cnt = 0
 
     def update(self, val, _n=1):
-        """update class parameters"""
         self.sum += val * _n
         self.cnt += _n
         self.avg = self.sum / self.cnt
@@ -179,8 +178,8 @@ class MetricMeter:
         self.Y.append(Y)
 
     def score(self):
-        self.Y = np.hstack(self.Y)
-        self.Y_pred = np.hstack(self.Y_pred)
+        self.Y = np.concatenate(self.Y, axis=0)
+        self.Y_pred = np.concatenate(self.Y_pred, axis=0)
         return self.score_fn(self.Y, self.Y_pred)
 
 
@@ -228,146 +227,3 @@ def create_exp_dir(path, scripts_to_save=None):
         for script in scripts_to_save:
             dst_file = os.path.join(path, "scripts", os.path.basename(script))
             shutil.copyfile(script, dst_file)
-            
-            
-class BatchGen(object):
-
-    def __init__(self, reader, discretizer, normalizer, batch_size,
-                 small_part, target_repl, shuffle, return_names=False):
-        self.batch_size = batch_size
-        self.target_repl = target_repl
-        self.shuffle = shuffle
-        self.return_names = return_names
-
-        self._load_data(reader, discretizer, normalizer, small_part)
-
-        self.steps = (len(self.data[0]) + batch_size - 1) // batch_size
-        self.lock = threading.Lock()
-        self.generator = self._generator()
-
-    def _load_data(self, reader, discretizer, normalizer, small_part=False):
-        N = reader.get_number_of_examples()
-        if small_part:
-            N = 1000
-        ret = read_chunk(reader, N)
-        data = ret["X"]
-        ts = ret["t"]
-        ys = ret["y"]
-        names = ret["name"]
-        data = [discretizer.transform(X, end=t)[0] for (X, t) in zip(data, ts)]
-        if (normalizer is not None):
-            data = [normalizer.transform(X) for X in data]
-        ys = np.array(ys, dtype=np.int32)
-        self.data = (data, ys)
-        self.ts = ts
-        self.names = names
-
-    def _generator(self):
-        B = self.batch_size
-        while True:
-            if self.shuffle:
-                N = len(self.data[1])
-                order = list(range(N))
-                random.shuffle(order)
-                tmp_data = [[None] * N, [None] * N]
-                tmp_names = [None] * N
-                tmp_ts = [None] * N
-                for i in range(N):
-                    tmp_data[0][i] = self.data[0][order[i]]
-                    tmp_data[1][i] = self.data[1][order[i]]
-                    tmp_names[i] = self.names[order[i]]
-                    tmp_ts[i] = self.ts[order[i]]
-                self.data = tmp_data
-                self.names = tmp_names
-                self.ts = tmp_ts
-            else:
-                # sort entirely
-                X = self.data[0]
-                y = self.data[1]
-                (X, y, self.names, self.ts) = sort_and_shuffle([X, y, self.names, self.ts], B)
-                self.data = [X, y]
-
-            self.data[1] = np.array(self.data[1])  # this is important for Keras
-            for i in range(0, len(self.data[0]), B):
-                x = self.data[0][i:i+B]
-                y = self.data[1][i:i+B]
-                names = self.names[i:i + B]
-                ts = self.ts[i:i + B]
-
-                x = pad_zeros(x)
-                y = np.array(y)  # (B, 25)
-
-                if self.target_repl:
-                    y_rep = np.expand_dims(y, axis=1).repeat(x.shape[1], axis=1)  # (B, T, 25)
-                    batch_data = (x, [y, y_rep])
-                else:
-                    batch_data = (x, y)
-
-                if not self.return_names:
-                    yield batch_data
-                else:
-                    yield {"data": batch_data, "names": names, "ts": ts}
-
-    def __iter__(self):
-        return self.generator
-
-    def next(self):
-        with self.lock:
-            return next(self.generator)
-
-    def __next__(self):
-        return self.next()
-    
-def read_chunk(reader, chunk_size):
-    data = {}
-    for i in range(chunk_size):
-        ret = reader.read_next()
-        for k, v in ret.items():
-            if k not in data:
-                data[k] = []
-            data[k].append(v)
-    data["header"] = data["header"][0]
-    return data
-
-def pad_zeros(arr, min_length=None):
-    """
-    `arr` is an array of `np.array`s
-    The function appends zeros to every `np.array` in `arr`
-    to equalize their first axis lenghts.
-    """
-    dtype = arr[0].dtype
-    max_len = max([x.shape[0] for x in arr])
-    ret = [np.concatenate([x, np.zeros((max_len - x.shape[0],) + x.shape[1:], dtype=dtype)], axis=0)
-           for x in arr]
-    if (min_length is not None) and ret[0].shape[0] < min_length:
-        ret = [np.concatenate([x, np.zeros((min_length - x.shape[0],) + x.shape[1:], dtype=dtype)], axis=0)
-               for x in ret]
-    return np.array(ret)
-
-def sort_and_shuffle(data, batch_size):
-    """ Sort data by the length and then make batches and shuffle them.
-        data is tuple (X1, X2, ..., Xn) all of them have the same length.
-        Usually data = (X, y).
-    """
-    assert len(data) >= 2
-    data = list(zip(*data))
-
-    random.shuffle(data)
-
-    old_size = len(data)
-    rem = old_size % batch_size
-    head = data[:old_size - rem]
-    tail = data[old_size - rem:]
-    data = []
-
-    head.sort(key=(lambda x: x[0].shape[0]))
-
-    mas = [head[i: i+batch_size] for i in range(0, len(head), batch_size)]
-    random.shuffle(mas)
-
-    for x in mas:
-        data += x
-    data += tail
-
-    data = list(zip(*data))
-    return data
