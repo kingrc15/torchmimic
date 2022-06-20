@@ -1,4 +1,3 @@
-import glob
 
 import torch.nn as nn
 
@@ -18,10 +17,7 @@ args = parse()
 args.gpu = get_free_gpu()
 torch.cuda.set_device(args.gpu)
 
-if not os.path.exists("./exp/"):
-    os.mkdir("./exp/")
-experiment_path = f"./exp/{args.dst_folder}"
-create_exp_dir(experiment_path, scripts_to_save=glob.glob("*.py"))
+log = Logger(args)
 
 kwargs = {"num_workers": 5, "pin_memory": True} if args.gpu else {}
 
@@ -101,9 +97,7 @@ auroc_macro_mtr = MetricMeter(ROCAUC("macro"))
 
 for epoch in range(args.epochs):
     model.train()
-    loss_mtr.reset()
-    auroc_micro_mtr.reset()
-    auroc_macro_mtr.reset()
+    log.reset()
 
     for batch_idx in range(len(train_data_gen)):
         data = next(train_data_gen)
@@ -122,30 +116,15 @@ for epoch in range(args.epochs):
         optimizer.step()
         optimizer.zero_grad(set_to_none=True)
 
-        label_tmp = label.cpu().numpy()
-        loss_mtr.update(loss.item(), data.size(0))
-        target = torch.argmax(label, dim=1)
-        pred = torch.argmax(output, dim=1)
-        output = output.cpu().detach().numpy()
-
-        target = target.cpu().numpy()
-        pred = pred.cpu().detach().numpy()
-
-        auroc_micro_mtr.update(label_tmp, output)
-        auroc_macro_mtr.update(label_tmp, output)
+        log.update(output, label, loss)
 
         if (batch_idx + 1) % args.report_freq == 0:
-            print(f"Train: epoch: {epoch+1}, loss = {loss_mtr.avg}")
+            print(f"Train: epoch: {epoch+1}, loss = {log.get_loss()}")
 
-    print(f"Train: epoch: {epoch+1}, loss = {loss_mtr.avg}")
-    print(
-        f"Train: epoch: {epoch+1}, AUROC Micro = {auroc_micro_mtr.score()}, AUROC Macro = {auroc_macro_mtr.score()}"
-    )
+    log.print_metrics(epoch,split="Train")
 
     model.eval()
-    loss_mtr.reset()
-    auroc_micro_mtr.reset()
-    auroc_macro_mtr.reset()
+    log.reset()
     with torch.no_grad():
         for batch_idx in range(len(test_data_gen)):
             data = next(train_data_gen)
@@ -160,22 +139,9 @@ for epoch in range(args.epochs):
             output = model(data, seq_lens)
             loss = crit(output, label)
 
-            label_tmp = label.cpu().numpy()
-            loss_mtr.update(loss.item(), data.size(0))
-            target = torch.argmax(label, dim=1)
-            pred = torch.argmax(output, dim=1)
-            output = output.cpu().detach().numpy()
-
-            target = target.cpu().numpy()
-            pred = pred.cpu().detach().numpy()
-
-            auroc_micro_mtr.update(label_tmp, output)
-            auroc_macro_mtr.update(label_tmp, output)
+            log.update(output, label, loss)
 
             if (batch_idx + 1) % args.report_freq == 0:
-                print(f"Eval: epoch: {epoch+1}, loss = {loss_mtr.avg}")
+                print(f"Eval: epoch: {epoch+1}, loss = {log.get_loss()}")
 
-        print(f"Eval: epoch: {epoch+1}, loss = {loss_mtr.avg}")
-        print(
-            f"Eval: epoch: {epoch+1}, AUROC Micro = {auroc_micro_mtr.score()}, AUROC Macro = {auroc_macro_mtr.score()}"
-        )
+        log.print_metrics(epoch,split="Eval")

@@ -37,6 +37,9 @@ def parse():
     parser.add_argument(
         "--dropout_rate", type=float, default=0.4, help="residual dropout rate"
     )
+    parser.add_argument(
+        "--exp_name", type=str, default="test", help="experiment name"
+    )
 
     # Results
     parser.add_argument(

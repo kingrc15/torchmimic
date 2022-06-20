@@ -133,3 +133,4 @@ dmypy.json
 /exp/*
 /exp/**
 tmp
+/wandb
