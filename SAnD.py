@@ -5,7 +5,9 @@ import modules
 
 
 class EncoderLayerForSAnD(nn.Module):
-    def __init__(self, input_features, seq_len, n_heads, n_layers, d_model=128, dropout_rate=0.2) -> None:
+    def __init__(
+        self, input_features, seq_len, n_heads, n_layers, d_model=128, dropout_rate=0.2
+    ) -> None:
         super(EncoderLayerForSAnD, self).__init__()
         self.d_model = d_model
 
@@ -13,9 +15,9 @@ class EncoderLayerForSAnD(nn.Module):
         self.input_embedding = nn.Linear(input_features, d_model)
         self.positional_encoding = modules.PositionalEncoding(d_model, seq_len)
         self.time_encoding = modules.TimeEncoding(d_model, seq_len)
-        self.blocks = nn.ModuleList([
-            modules.Block(d_model, n_heads) for _ in range(n_layers)
-        ])
+        self.blocks = nn.ModuleList(
+            [modules.Block(d_model, n_heads) for _ in range(n_layers)]
+        )
 
     def forward(self, x, ts=None) -> torch.Tensor:
         if x.isnan().any():
@@ -23,7 +25,7 @@ class EncoderLayerForSAnD(nn.Module):
             raise
         # x = x.transpose(1, 2)
         x = self.input_embedding(x)
-        
+
         # x = x.transpose(1, 2)
 
         if ts:
@@ -46,12 +48,22 @@ class SAnD(nn.Module):
     `Attend and Diagnose: Clinical Time Series Analysis Using Attention Models <https://arxiv.org/abs/1711.03905>`_
     Huan Song, Deepta Rajan, Jayaraman J. Thiagarajan, Andreas Spanias
     """
+
     def __init__(
-            self, input_features: int, seq_len: int, n_heads: int, factor: int,
-            n_class: int, n_layers: int, d_model: int = 128, dropout_rate: float = 0.2
+        self,
+        input_features: int,
+        seq_len: int,
+        n_heads: int,
+        factor: int,
+        n_class: int,
+        n_layers: int,
+        d_model: int = 128,
+        dropout_rate: float = 0.2,
     ) -> None:
         super(SAnD, self).__init__()
-        self.encoder = EncoderLayerForSAnD(input_features, seq_len, n_heads, n_layers, d_model, dropout_rate)
+        self.encoder = EncoderLayerForSAnD(
+            input_features, seq_len, n_heads, n_layers, d_model, dropout_rate
+        )
         # self.dense_interpolation = modules.DenseInterpolation(seq_len, factor)
         self.clf = modules.ClassificationModule(d_model, seq_len, n_class)
         # self.clf = modules.ClassificationModule(d_model, factor, n_class)

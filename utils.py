@@ -10,16 +10,23 @@ from scipy.signal import medfilt, butter, filtfilt
 from scipy.stats import pearsonr
 
 from sklearn.manifold import TSNE
-from sklearn.metrics import f1_score, roc_auc_score, balanced_accuracy_score, mean_absolute_error
+from sklearn.metrics import (
+    f1_score,
+    roc_auc_score,
+    balanced_accuracy_score,
+    mean_absolute_error,
+)
 
 import warnings
 
 warnings.filterwarnings("ignore")
 
+
 def get_free_gpu():
-    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
-    memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+    os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp")
+    memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
     return int(np.argmax(memory_available))
+
 
 def remove_nans(x):
     return x[~np.isnan(x).any(axis=1)]
@@ -59,9 +66,10 @@ class Preprocess:
             x = step(x)
 
         return x
-    
+
+
 def frame_count(frame_size, window_size, stride):
-    return max(int(((frame_size - (window_size - 1) - 1) / stride) + 1),0)
+    return max(int(((frame_size - (window_size - 1) - 1) / stride) + 1), 0)
 
 
 class BlandAltman:
@@ -76,9 +84,7 @@ class BlandAltman:
         plt.clf()
         plt.scatter(Y, Y_pred, marker=".")
         plt.axline((0, b), (1, a + b), color="k", label=f"{a}x + {b}")
-        plt.title(
-            f"Reference vs Estimate. Correlation = {pearsonr(Y, Y_pred)[0]:.5f}"
-        )
+        plt.title(f"Reference vs Estimate. Correlation = {pearsonr(Y, Y_pred)[0]:.5f}")
         plt.xlabel("True Potassium")
         plt.ylabel("Estimated Potassium")
         plt.legend()
@@ -88,7 +94,7 @@ class BlandAltman:
         diff = Y - Y_pred
         md = np.mean(diff)
         sd = np.std(diff)
-        
+
         print(f"Mean = {md}, Standard Deviation = {sd}")
 
         plt.clf()
@@ -129,19 +135,21 @@ def accuracy(Y, Y_pred):
 def f1(Y, Y_pred):
     return f1_score(Y, Y_pred)
 
+
 def balanced_accuracy(Y, Y_pred):
     return balanced_accuracy_score(Y, Y_pred)
+
 
 def mae(Y, Y_pred):
     return mean_absolute_error(Y, Y_pred)
 
-class ROCAUC():
-    def __init__(self, type='micro'):
+
+class ROCAUC:
+    def __init__(self, type="micro"):
         self.type = type
-        
-    
+
     def __call__(self, Y, Y_pred):
-        return roc_auc_score(Y, Y_pred, multi_class='ovr', average=self.type)
+        return roc_auc_score(Y, Y_pred, multi_class="ovr", average=self.type)
 
 
 def count_parameters_in_MB(model):

@@ -16,7 +16,7 @@ class PositionalEncoding(nn.Module):
         for pos in range(seq_len):
             for i in range(0, d_model, 2):
                 pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
-                pe[pos, i+1] = math.cos(pos / (10000 ** ((2 * (i+1)) / d_model)))
+                pe[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1)) / d_model)))
 
         pe = pe.unsqueeze(0)
         self.register_buffer("pe", pe)
@@ -26,7 +26,8 @@ class PositionalEncoding(nn.Module):
         x = math.sqrt(self.d_model) * x
         x = x + self.pe[:, :seq_len].requires_grad_(False)
         return x
-    
+
+
 class TimeEncoding(nn.Module):
     def __init__(self, d_model, seq_len) -> None:
         super(TimeEncoding, self).__init__()
@@ -37,7 +38,7 @@ class TimeEncoding(nn.Module):
         for pos in range(seq_len):
             for i in range(0, d_model, 2):
                 pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
-                pe[pos, i+1] = math.cos(pos / (10000 ** ((2 * (i+1)) / d_model)))
+                pe[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1)) / d_model)))
 
         pe = pe.unsqueeze(0)
         self.register_buffer("pe", pe)
@@ -47,7 +48,7 @@ class TimeEncoding(nn.Module):
         for pos in enumerate(ts):
             for i in range(0, self.d_model, 2):
                 pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
-                pe[pos, i+1] = math.cos(pos / (10000 ** ((2 * (i+1)) / d_model)))
+                pe[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1)) / d_model)))
         seq_len = x.shape[1]
         x = math.sqrt(self.d_model) * x
         x = x + pe[:, :seq_len].requires_grad_(False)
@@ -68,9 +69,9 @@ class ResidualBlock(nn.Module):
         :return: [N, seq_len, features]
         """
         if isinstance(self.layer, nn.MultiheadAttention):
-            src = x.transpose(0, 1)     # [seq_len, N, features]
+            src = x.transpose(0, 1)  # [seq_len, N, features]
             output, self.attn_weights = self.layer(src, src, src)
-            output = output.transpose(0, 1)     # [N, seq_len, features]
+            output = output.transpose(0, 1)  # [N, seq_len, features]
 
         else:
             output = self.layer(x)
@@ -88,7 +89,7 @@ class PositionWiseFeedForward(nn.Module):
         self.conv = nn.Sequential(
             nn.Conv1d(hidden_size, hidden_size * 2, 1),
             nn.ReLU(),
-            nn.Conv1d(hidden_size * 2, hidden_size, 1)
+            nn.Conv1d(hidden_size * 2, hidden_size, 1),
         )
 
     def forward(self, tensor: torch.Tensor) -> torch.Tensor:
@@ -97,7 +98,7 @@ class PositionWiseFeedForward(nn.Module):
         tensor = tensor.transpose(1, 2)
 
         return tensor
-    
+
 
 class EncoderBlock(nn.Module):
     def __init__(self, embed_dim: int, num_head: int, dropout_rate=0.1) -> None:
@@ -105,7 +106,9 @@ class EncoderBlock(nn.Module):
         self.attention = ResidualBlock(
             nn.MultiheadAttention(embed_dim, num_head), embed_dim, p=dropout_rate
         )
-        self.ffn = ResidualBlock(PositionWiseFeedForward(embed_dim), embed_dim, p=dropout_rate)
+        self.ffn = ResidualBlock(
+            PositionWiseFeedForward(embed_dim), embed_dim, p=dropout_rate
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
@@ -127,7 +130,7 @@ class DenseInterpolation(nn.Module):
         for t in range(seq_len):
             s = np.array((factor * (t + 1)) / seq_len, dtype=np.float32)
             for m in range(factor):
-                tmp = np.array(1 - (np.abs(s - (1+m)) / factor), dtype=np.float32)
+                tmp = np.array(1 - (np.abs(s - (1 + m)) / factor), dtype=np.float32)
                 w = np.power(tmp, 2, dtype=np.float32)
                 W[m, t] = w
 
@@ -148,8 +151,8 @@ class ClassificationModule(nn.Module):
         self.num_class = num_class
 
         self.fc = nn.Sequential(
-            nn.Linear(int(d_model * factor), num_class),
-            nn.Softmax(dim=1))
+            nn.Linear(int(d_model * factor), num_class), nn.Softmax(dim=1)
+        )
 
         # nn.init.normal_(self.fc[0].weight, std=0.02)
         # nn.init.normal_(self.fc[0].bias, 0)
@@ -158,11 +161,12 @@ class ClassificationModule(nn.Module):
         x = x.reshape(-1, int(self.factor * self.d_model))
         x = self.fc(x)
         return x
-    
+
+
 class Attn(nn.Module):
     def __init__(self, embedding_size, num_heads, qk_scale=None, qkv_bias=None):
         super().__init__()
-        
+
         self.num_heads = num_heads
         head_dim = embedding_size // num_heads
         all_head_dim = head_dim * num_heads
@@ -179,17 +183,18 @@ class Attn(nn.Module):
         self.proj = nn.Linear(all_head_dim, embedding_size)
 
     def forward(self, x):
-        
+
         B, N, C = x.shape
         qkv_bias = None
         qkv = F.linear(input=x, weight=self.qkv.weight, bias=qkv_bias)
-        q, k, v = qkv.reshape(B, N, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)  # [B, NH, -1]
+        q, k, v = qkv.reshape(B, N, 3, self.num_heads, -1).permute(
+            2, 0, 3, 1, 4
+        )  # [B, NH, -1]
 
         q = q * self.scale
         attn = q @ k.transpose(-2, -1)
 
         attn = attn.softmax(dim=-1)
-        
 
         x = (attn @ v).transpose(1, 2).reshape(B, N, -1)
         x = self.proj(x)
