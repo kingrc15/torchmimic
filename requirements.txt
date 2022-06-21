@@ -7,7 +7,7 @@ charset-normalizer==2.0.4
 cryptography==37.0.1
 cycler==0.11.0
 docker-pycreds==0.4.0
-fonttools==4.33.3
+fonttools==4.27.1
 gitdb==4.0.9
 GitPython==3.1.27
 idna==3.3
