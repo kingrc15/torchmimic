@@ -38,7 +38,6 @@ jobs:
           pip install .
       - name: Test Search Space
         run: |
-          pip install -U pytest
           pip install -r requirements.txt
           echo $PWD
           echo "Show what we have here:"
