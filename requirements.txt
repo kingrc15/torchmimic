@@ -46,7 +46,7 @@ sentry-sdk==1.5.12
 setproctitle==1.2.3
 setuptools==61.2.0
 shortuuid==1.0.8
-sip==4.19.13
+sip==6.6.2
 six==1.16.0
 smmap==3.0.5
 threadpoolctl==2.2.0
