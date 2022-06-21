@@ -26,10 +26,13 @@ class LSTM_Model(nn.Module):
 
         self.final_layer = nn.Sequential(
             nn.Dropout(args.dropout_rate),
-            nn.Linear(linear_input, 25),
+            nn.Linear(linear_input, args.n_classes),
+            nn.Sigmoid()
         )
 
-    def forward(self, seq, lens):
+    def forward(self, data):
+        seq = data[0]
+        lens = data[1]
         packed = pack_padded_sequence(seq, lens, batch_first=True, enforce_sorted=False)
 
         z, (hn, cn) = self.lstm_layer(packed)

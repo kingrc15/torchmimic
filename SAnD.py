@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 import modules
 
@@ -10,31 +11,27 @@ class EncoderLayerForSAnD(nn.Module):
     ) -> None:
         super(EncoderLayerForSAnD, self).__init__()
         self.d_model = d_model
+        self.seq_len = seq_len
 
-        # self.input_embedding = nn.Conv1d(input_features, d_model, 3, padding=1)
-        self.input_embedding = nn.Linear(input_features, d_model)
+        self.input_embedding = nn.Conv1d(input_features, d_model, 1)
         self.positional_encoding = modules.PositionalEncoding(d_model, seq_len)
-        self.time_encoding = modules.TimeEncoding(d_model, seq_len)
-        self.blocks = nn.ModuleList(
-            [modules.Block(d_model, n_heads) for _ in range(n_layers)]
-        )
-
-    def forward(self, x, ts=None) -> torch.Tensor:
-        if x.isnan().any():
-            print(x)
-            raise
-        # x = x.transpose(1, 2)
+        print(n_layers)
+        self.blocks = nn.ModuleList([
+            modules.EncoderBlock(d_model, n_heads, dropout_rate) for _ in range(n_layers)
+        ])
+    def forward(self, x, mask) -> torch.Tensor:
+        x[mask] = 0
+        x = x.transpose(1, 2)
         x = self.input_embedding(x)
-
-        # x = x.transpose(1, 2)
-
-        if ts:
-            x = self.time_encoding(x, ts)
-        else:
-            x = self.positional_encoding(x)
+        x = x.transpose(1, 2)
+        
+        x = self.positional_encoding(x)
+        
+        mask = torch.cat((mask, torch.ones((x.size(0), self.seq_len - x.size(1)), device = x.device)), dim=1).bool()
+        x = torch.cat((x, torch.zeros(x.size(0), self.seq_len - x.size(1), x.size(2), device = x.device)), dim =1)
 
         for l in self.blocks:
-            x = l(x)
+            x = l(x, mask)
 
         return x
 
@@ -61,15 +58,18 @@ class SAnD(nn.Module):
         dropout_rate: float = 0.2,
     ) -> None:
         super(SAnD, self).__init__()
+        self.seq_len = 500
         self.encoder = EncoderLayerForSAnD(
             input_features, seq_len, n_heads, n_layers, d_model, dropout_rate
         )
-        # self.dense_interpolation = modules.DenseInterpolation(seq_len, factor)
-        self.clf = modules.ClassificationModule(d_model, seq_len, n_class)
-        # self.clf = modules.ClassificationModule(d_model, factor, n_class)
+        self.dense_interpolation = modules.DenseInterpolation(seq_len, factor)
+        self.clf = modules.ClassificationModule(d_model, factor, n_class)
 
-    def forward(self, x, ts=None) -> torch.Tensor:
-        x = self.encoder(x, ts)
-        # x = self.dense_interpolation(x)
+    def forward(self, data) -> torch.Tensor:
+        x = data[0][:,:self.seq_len]
+        mask = data[3][:,:self.seq_len].to(x.device)
+        
+        x = self.encoder(x, mask)
+        x = self.dense_interpolation(x)
         x = self.clf(x)
         return x

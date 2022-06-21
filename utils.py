@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import medfilt, butter, filtfilt
 from scipy.stats import pearsonr
+from torch.nn.utils.rnn import pad_sequence
 
 from sklearn.manifold import TSNE
 from sklearn.metrics import (
@@ -42,6 +43,13 @@ def test_range(x):
 
     return []
 
+def pad_colalte(batch):
+    xx, yy, lens = zip(*batch)
+    x = pad_sequence(xx, batch_first=True, padding_value=-np.inf)
+    y = torch.stack(yy, dim=0)
+    
+    mask = (x == -np.inf)[:,:,0]
+    return x, y, lens, mask
 
 class Normalize:
     def __init__(self, mean, std):
@@ -289,7 +297,8 @@ class Logger:
             result_str += f", {name}={result}"
 
         print(result_str)
-        wandb.log({}, commit=True)
+        if split == "Eval":
+            wandb.log({})
 
     def save(self, model):
         torch.save(model.state_dict(), os.path.join(self.experiment_path, "weights.pt"))            

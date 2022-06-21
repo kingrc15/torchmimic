@@ -2,10 +2,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import torch
-from torch.nn.utils.rnn import pad_sequence
+
 import numpy as np
 
-import threading
 import random
 import os
 
@@ -20,23 +19,21 @@ class BatchGen(object):
         small_part,
         target_repl,
         shuffle,
-        return_names=False,
+        return_mask=False,
     ):
         self.batch_size = batch_size
         self.target_repl = target_repl
         self.shuffle = shuffle
-        self.return_names = return_names
+        self.return_mask = return_mask
 
         self._load_data(reader, discretizer, normalizer, small_part)
 
-        self.steps = (len(self.data) + batch_size - 1) // batch_size
-        self.lock = threading.Lock()
-        self.generator = self._generator()
+        self.steps = len(self.data)
 
     def _load_data(self, reader, discretizer, normalizer, small_part=False):
         N = reader.get_number_of_examples()
         if small_part:
-            N = 1000
+            N = 20000
         ret = read_chunk(reader, N)
         data = ret["X"]
         ts = ret["t"]
@@ -51,46 +48,19 @@ class BatchGen(object):
         self.ts = ts
         self.names = names
         self.seq_lens = [len(d) for d in data]
+        
+    def get_max_seq_length(self):
+        return max(self.seq_lens)
 
-    def _generator(self):
-        B = self.batch_size
-        while True:
-            if self.shuffle:
-                N = len(self.labels)
-                order = list(range(N))
-                random.shuffle(order)
-                tmp_data = [None] * N
-                tmp_sl = [None] * N
-                for i in range(N):
-                    tmp_data[i] = self.data[order[i]]
-                    tmp_sl[i] = self.seq_lens[order[i]]
-                self.data = tmp_data
-                self.labels = self.labels[order]
-                self.seq_lens = tmp_sl
+    def __getitem__(self, idx):
+        x = self.data[idx]
+        y = self.labels[idx]
+        sl = self.seq_lens[idx]
 
-            for i in range(0, len(self.data), B):
-                x = self.data[i : i + B]
-                y = self.labels[i : i + B]
-                sl = self.seq_lens[i : i + B]
-
-                x = pad_sequence(x, batch_first=True)
-
-                batch_data = (x, y, sl)
-
-                yield batch_data
+        return x, y, sl
 
     def __len__(self):
         return self.steps
-
-    def __iter__(self):
-        return self.generator
-
-    def next(self):
-        with self.lock:
-            return next(self.generator)
-
-    def __next__(self):
-        return self.next()
 
 
 def save_results(names, ts, predictions, labels, path):

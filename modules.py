@@ -28,33 +28,6 @@ class PositionalEncoding(nn.Module):
         return x
 
 
-class TimeEncoding(nn.Module):
-    def __init__(self, d_model, seq_len) -> None:
-        super(TimeEncoding, self).__init__()
-        self.d_model = d_model
-
-        pe = torch.zeros(seq_len, d_model)
-
-        for pos in range(seq_len):
-            for i in range(0, d_model, 2):
-                pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
-                pe[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1)) / d_model)))
-
-        pe = pe.unsqueeze(0)
-        self.register_buffer("pe", pe)
-
-    def forward(self, x, ts) -> torch.Tensor:
-        pe = torch.zeros(seq_len, d_model)
-        for pos in enumerate(ts):
-            for i in range(0, self.d_model, 2):
-                pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
-                pe[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1)) / d_model)))
-        seq_len = x.shape[1]
-        x = math.sqrt(self.d_model) * x
-        x = x + pe[:, :seq_len].requires_grad_(False)
-        return x
-
-
 class ResidualBlock(nn.Module):
     def __init__(self, layer: nn.Module, embed_dim: int, p=0.1) -> None:
         super(ResidualBlock, self).__init__()
@@ -63,16 +36,13 @@ class ResidualBlock(nn.Module):
         self.norm = nn.LayerNorm(embed_dim)
         self.attn_weights = None
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x, src_mask) -> torch.Tensor:
         """
         :param x: [N, seq_len, features]
         :return: [N, seq_len, features]
         """
         if isinstance(self.layer, nn.MultiheadAttention):
-            src = x.transpose(0, 1)  # [seq_len, N, features]
-            output, self.attn_weights = self.layer(src, src, src)
-            output = output.transpose(0, 1)  # [N, seq_len, features]
-
+            output, self.attn_weights = self.layer(x, x, x, src_mask)
         else:
             output = self.layer(x)
 
@@ -104,16 +74,16 @@ class EncoderBlock(nn.Module):
     def __init__(self, embed_dim: int, num_head: int, dropout_rate=0.1) -> None:
         super(EncoderBlock, self).__init__()
         self.attention = ResidualBlock(
-            nn.MultiheadAttention(embed_dim, num_head), embed_dim, p=dropout_rate
+            nn.MultiheadAttention(embed_dim, num_head, batch_first=True), embed_dim, p=dropout_rate
         )
         self.ffn = ResidualBlock(
             PositionWiseFeedForward(embed_dim), embed_dim, p=dropout_rate
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x, src_mask) -> torch.Tensor:
         identity = x
-        x = self.attention(x)
-        x = self.ffn(x)
+        x = self.attention(x, src_mask)
+        x = self.ffn(x, src_mask)
         return x + identity
 
 
@@ -130,7 +100,7 @@ class DenseInterpolation(nn.Module):
         for t in range(seq_len):
             s = np.array((factor * (t + 1)) / seq_len, dtype=np.float32)
             for m in range(factor):
-                tmp = np.array(1 - (np.abs(s - (1 + m)) / factor), dtype=np.float32)
+                tmp = np.array(1 - (np.abs(s - (1+m)) / factor), dtype=np.float32)
                 w = np.power(tmp, 2, dtype=np.float32)
                 W[m, t] = w
 
@@ -151,14 +121,15 @@ class ClassificationModule(nn.Module):
         self.num_class = num_class
 
         self.fc = nn.Sequential(
-            nn.Linear(int(d_model * factor), num_class), nn.Softmax(dim=1)
+            nn.Linear(int(d_model * factor), num_class),
+            nn.Sigmoid()
         )
 
-        # nn.init.normal_(self.fc[0].weight, std=0.02)
-        # nn.init.normal_(self.fc[0].bias, 0)
+        nn.init.normal_(self.fc[0].weight, std=0.02)
+        nn.init.normal_(self.fc[0].bias, 0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x.reshape(-1, int(self.factor * self.d_model))
+        x = x.contiguous().view(-1, int(self.factor * self.d_model))
         x = self.fc(x)
         return x
 

@@ -14,6 +14,8 @@ from batch_gen import BatchGen
 
 args = parse()
 
+args.n_classes = 25
+
 args.gpu = get_free_gpu()
 torch.cuda.set_device(args.gpu)
 
@@ -53,7 +55,8 @@ train_data_gen = BatchGen(
     args.train_batch_size,
     False,
     False,
-    shuffle=True,
+    shuffle=False,
+    return_mask=args.model_type=="SAnD"
 )
 
 test_data_gen = BatchGen(
@@ -64,19 +67,27 @@ test_data_gen = BatchGen(
     False,
     False,
     shuffle=False,
+    return_mask=args.model_type=="SAnD"
 )
+
+kwargs = {'num_workers': 2, 'pin_memory': True} if args.gpu else {}
+
+train_loader = DataLoader(
+      train_data_gen, batch_size=args.train_batch_size, shuffle=True, collate_fn=pad_colalte, **kwargs)
+test_loader = DataLoader(
+      test_data_gen, batch_size=args.test_batch_size, shuffle=False, collate_fn=pad_colalte, **kwargs)
 
 if args.model_type == "LSTM":
     model = LSTM_Model(args)
 if args.model_type == "SAnD":
     model = SAnD(
         input_features=76,
-        seq_len=args.sequence_length,
-        n_heads=16,
-        factor=1,
-        n_class=25,
-        n_layers=2,
-        d_model=256,
+        seq_len=train_data_gen.get_max_seq_length(),
+        n_heads=args.n_heads,
+        factor=args.factor,
+        n_class=args.n_classes,
+        n_layers=args.num_layers,
+        d_model=args.hidden_dim,
         dropout_rate=args.dropout_rate,
     )
 
@@ -89,7 +100,7 @@ optimizer = optim.Adam(
     betas=(0.9, 0.98),
 )
 
-crit = nn.BCEWithLogitsLoss()
+crit = nn.BCELoss()
 
 loss_mtr = AverageMeter()
 auroc_micro_mtr = MetricMeter(ROCAUC("micro"))
@@ -98,19 +109,12 @@ auroc_macro_mtr = MetricMeter(ROCAUC("macro"))
 for epoch in range(args.epochs):
     model.train()
     log.reset()
-
-    for batch_idx in range(len(train_data_gen)):
-        data = next(train_data_gen)
-        seq_lens = data[2]
-        label = data[1]
-        data = data[0]
-
+    for batch_idx, (data, label, lens, mask) in enumerate(train_loader):
         if args.gpu:
             data = data.cuda()
             label = label.cuda()
 
-        output = model(data, seq_lens)
-
+        output = model((data, lens))
         loss = crit(output, label)
         loss.backward()
         optimizer.step()
@@ -126,17 +130,12 @@ for epoch in range(args.epochs):
     model.eval()
     log.reset()
     with torch.no_grad():
-        for batch_idx in range(len(test_data_gen)):
-            data = next(train_data_gen)
-            seq_lens = data[2]
-            label = data[1]
-            data = data[0]
-
+        for batch_idx, (data, label, lens, mask) in enumerate(test_loader):
             if args.gpu:
                 data = data.cuda()
                 label = label.cuda()
 
-            output = model(data, seq_lens)
+            output = model((data, lens))
             loss = crit(output, label)
 
             log.update(output, label, loss)

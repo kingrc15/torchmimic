@@ -35,7 +35,7 @@ def parse():
         "--stride", type=int, default=1, help="stride used by sliding window"
     )
     parser.add_argument(
-        "--dropout_rate", type=float, default=0.4, help="residual dropout rate"
+        "--dropout_rate", type=float, default=0.3, help="residual dropout rate"
     )
     parser.add_argument(
         "--exp_name", type=str, default="test", help="experiment name"
@@ -59,7 +59,9 @@ def parse():
         help="use bidirectional recurrent layers",
     )
     parser.add_argument("--hidden_dim", type=int, default=256, help="hidden layer size")
-    parser.add_argument("--num_layers", type=int, default=1, help="number of layers")
+    parser.add_argument("--num_layers", type=int, default=2, help="number of layers")
+    parser.add_argument("--n_heads", type=int, default=8, help="number of attention heads")
+    parser.add_argument("--factor", type=int, default=120, help="scaling factor")
 
     # Hardware
     parser.add_argument("--gpu", type=int, default=0, help="gpu device id")
