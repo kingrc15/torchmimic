@@ -12,20 +12,20 @@ LSTM
 
 ### Benchmarks
 
-[x] Phenotyping
-[] Length of Stay
-[] Decompensation
-[] In Hospital Mortality
-[] Multitask
+- [x] Phenotyping
+- [ ] Length of Stay
+- [ ] Decompensation
+- [ ] In Hospital Mortality
+- [ ] Multitask
 
 ### Models
-[x] Standard LSTM
-[] Standard LSTM + Deep Supervision
-[] Logistic Regression
-[] Channelwise LSTM
-[] Channelwise LSTM + Deep Supervision
-[] Multitask LSTM
-[] Multitask Channelwise LSTM
+- [x] Standard LSTM
+- [ ] Standard LSTM + Deep Supervision
+- [ ] Logistic Regression
+- [ ] Channelwise LSTM
+- [ ] Channelwise LSTM + Deep Supervision
+- [ ] Multitask LSTM
+- [ ] Multitask Channelwise LSTM
 
 ## Testing
 

@@ -36,12 +36,12 @@ jobs:
       - name: Install torchmimic from source
         run: |
           pip install .
-      - name: Test Search Space
-        run: |
-          pip install -r requirements.txt
-          echo $PWD
-          echo "Show what we have here:"
-          ls
-          python --version
-          python -m pytest ./tests/*.py -s
-        shell: bash
+      # - name: Test Search Space
+      #   run: |
+      #     pip install -r requirements.txt
+      #     echo $PWD
+      #     echo "Show what we have here:"
+      #     ls
+      #     python --version
+      #     python -m pytest ./tests/*.py -s
+      #   shell: bash
