@@ -7,6 +7,7 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
+
 def cluster_acc(Y, Y_pred):
     Y_pred, Y = np.array(Y_pred, dtype=np.int64), np.array(Y, dtype=np.int64)
     assert Y_pred.size == Y.size
