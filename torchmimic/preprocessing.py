@@ -12,7 +12,9 @@ class Discretizer:
         store_masks=True,
         impute_strategy="zero",
         start_time="zero",
-        config_path=os.path.join(os.path.dirname(__file__), "discretizer_config.json"),
+        config_path=os.path.join(
+            os.path.dirname(__file__), "discretizers", "discretizer_config.json"
+        ),
     ):
 
         with open(config_path) as f:

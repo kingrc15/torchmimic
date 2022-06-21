@@ -33,7 +33,7 @@ class BatchGen(object):
     def _load_data(self, reader, discretizer, normalizer, small_part=False):
         N = reader.get_number_of_examples()
         if small_part:
-            N = 20000
+            N = 1000
         ret = read_chunk(reader, N)
         data = ret["X"]
         ts = ret["t"]
@@ -48,7 +48,7 @@ class BatchGen(object):
         self.ts = ts
         self.names = names
         self.seq_lens = [len(d) for d in data]
-        
+
     def get_max_seq_length(self):
         return max(self.seq_lens)
 

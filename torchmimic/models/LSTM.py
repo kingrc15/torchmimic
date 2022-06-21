@@ -5,29 +5,37 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 class LSTM_Model(nn.Module):
-    def __init__(self, args):
+    def __init__(
+        self,
+        n_classes,
+        hidden_dim=128,
+        num_layers=1,
+        dropout_rate=0,
+        bidirectional=False,
+    ):
         super().__init__()
+        self.num_layers = num_layers
+        self.dropout_rate = dropout_rate
+        self.bidirectional = bidirectional
 
-        if args.bidirectional:
-            self.hidden_dim = args.hidden_dim // 2
+        if bidirectional:
+            self.hidden_dim = hidden_dim // 2
 
         self.lstm_layer = nn.LSTM(
             76,
             self.hidden_dim,
-            num_layers=args.num_layers,
-            dropout=args.dropout_rate,
-            bidirectional=args.bidirectional,
+            num_layers=num_layers,
+            dropout=dropout_rate,
+            bidirectional=bidirectional,
             batch_first=True,
         )
 
         linear_input = self.hidden_dim
-        if args.bidirectional:
+        if bidirectional:
             linear_input *= 2
 
         self.final_layer = nn.Sequential(
-            nn.Dropout(args.dropout_rate),
-            nn.Linear(linear_input, args.n_classes),
-            nn.Sigmoid()
+            nn.Dropout(dropout_rate), nn.Linear(linear_input, n_classes), nn.Sigmoid()
         )
 
     def forward(self, data):
@@ -43,3 +51,11 @@ class LSTM_Model(nn.Module):
         )
 
         return output
+
+    def get_config(self):
+        return {
+            "hidden_dim": self.hidden_dim,
+            "num_layers": self.num_layers,
+            "dropout_rate": self.dropout_rate,
+            "bidirectional": self.bidirectional,
+        }
