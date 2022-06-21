@@ -16,9 +16,9 @@ def parse():
 
     # Training
     parser.add_argument(
-        "--learning_rate", type=float, default=0.0001, help="init learning rate"
+        "--learning_rate", type=float, default=0.001, help="init learning rate"
     )
-    parser.add_argument("--weight_decay", type=float, default=5e-4, help="weight decay")
+    parser.add_argument("--weight_decay", type=float, default=0, help="weight decay")
     parser.add_argument(
         "--report_freq", type=float, default=200, help="report frequency"
     )
