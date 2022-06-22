@@ -2,10 +2,9 @@
 
 MIMIC Benchmark reimplemented in PyTorch. 
 
-## Phenotyping 
+## Weights and Biases Support
 
-LSTM
-`python main.py --model_type LSTM --train_batch_size 8 --learning_rate 0.001 --bidirectional --weight_decay 0 --dropout_rate 0.3`
+This library has built-in logging of model configurations and key metrics using the Weights and Biases library.
 
 
 ## TODOs
@@ -13,9 +12,9 @@ LSTM
 ### Benchmarks
 
 - [x] Phenotyping
-- [ ] Length of Stay
-- [x] Decompensation
-- [ ] In Hospital Mortality
+- [x] Length of Stay
+- [ ] Decompensation
+- [x] In Hospital Mortality
 - [ ] Multitask
 
 ### Models
@@ -30,3 +29,10 @@ LSTM
 ### Testing
 
 - [ ] Test data for GitHub Workflow
+
+### Documentation
+- [ ] Phenotyping Examples
+- [ ] Length of Stay Examples
+- [ ] Decompensation Examples
+- [ ] In Hospital Mortality Examples
+- [ ] Multitask Examples
