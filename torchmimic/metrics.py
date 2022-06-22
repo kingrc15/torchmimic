@@ -5,6 +5,8 @@ from sklearn.metrics import (
     roc_auc_score,
     balanced_accuracy_score,
     mean_absolute_error,
+    precision_recall_curve,
+    auc,
 )
 
 
@@ -35,6 +37,11 @@ def balanced_accuracy(Y, Y_pred):
 
 def mae(Y, Y_pred):
     return mean_absolute_error(Y, Y_pred)
+
+
+def aucpr(Y, Y_pred):
+    (precisions, recalls, thresholds) = precision_recall_curve(Y, Y_pred)
+    return auc(recalls, precisions)
 
 
 class AUCROC:
