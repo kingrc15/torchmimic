@@ -77,8 +77,8 @@ class LOS_Trainer:
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
 
-        train_nbatches = 2000
-        val_nbatches = 1000
+        train_nbatches = None
+        val_nbatches = None
         if small_part:
             train_nbatches = 20
             val_nbatches = 20

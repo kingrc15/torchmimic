@@ -34,10 +34,16 @@ class BatchGen(object):
     def _load_data(self, reader, discretizer, normalizer, steps):
         N = reader.get_number_of_examples()
         ret = read_chunk(reader, steps)
-        data = ret["X"][:steps]
-        ts = ret["t"][:steps]
-        ys = ret["y"][:steps]
-        names = ret["name"][:steps]
+        if steps is None:
+            data = ret["X"]
+            ts = ret["t"]
+            ys = ret["y"]
+            names = ret["name"]
+        else:
+            data = ret["X"][:steps]
+            ts = ret["t"][:steps]
+            ys = ret["y"][:steps]
+            names = ret["name"][:steps]
         data = [discretizer.transform(X, end=t)[0] for (X, t) in zip(data, ts)]
         if normalizer is not None:
             data = [torch.Tensor(normalizer.transform(X)) for X in data]

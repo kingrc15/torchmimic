@@ -1,1 +1,1 @@
-from .train_phenotyping import Phenotype_Trainer
+from .train_decompensation import Decompensation_Trainer
