@@ -7,15 +7,16 @@ from sklearn.metrics import (
     mean_absolute_error,
     precision_recall_curve,
     auc,
-    cohen_kappa_score
+    cohen_kappa_score,
 )
+
 
 def kappa(Y, Y_pred):
     Y_pred = np.argmax(Y_pred, axis=1)
-    Y = Y[:,0]
-    return cohen_kappa_score(Y, Y_pred, weights='linear')
-    
-    
+    Y = Y[:, 0]
+    return cohen_kappa_score(Y, Y_pred, weights="linear")
+
+
 def cluster_acc(Y, Y_pred):
     Y_pred, Y = np.array(Y_pred, dtype=np.int64), np.array(Y, dtype=np.int64)
     assert Y_pred.size == Y.size
@@ -42,9 +43,9 @@ def balanced_accuracy(Y, Y_pred):
 
 
 def mae(Y, Y_pred):
-    one_hot = np.zeros((Y.size, Y.max()+1))
+    one_hot = np.zeros((Y.size, Y.max() + 1))
     for i in np.arange(Y.size):
-        one_hot[np.arange(Y.size),Y[i]] = 1
+        one_hot[np.arange(Y.size), Y[i]] = 1
     return mean_absolute_error(one_hot, Y_pred)
 
 

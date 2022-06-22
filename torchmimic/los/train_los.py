@@ -73,18 +73,16 @@ class LOS_Trainer:
         ]
 
         normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = (
-            "../normalizers/los_ts1.0.input_str:previous.start_time:zero.n5e4.normalizer"
-        )
+        normalizer_state = "../normalizers/los_ts1.0.input_str:previous.start_time:zero.n5e4.normalizer"
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
-        
+
         train_nbatches = 2000
         val_nbatches = 1000
         if small_part:
             train_nbatches = 20
             val_nbatches = 20
-            
+
         train_data_gen = BatchGen(
             train_reader,
             discretizer,
@@ -128,7 +126,7 @@ class LOS_Trainer:
             weight_decay=weight_decay,
             betas=(0.9, 0.98),
         )
-        
+
         self.crit = nn.CrossEntropyLoss()
 
     def fit(self, epochs):
@@ -139,9 +137,9 @@ class LOS_Trainer:
             for batch_idx, (data, label, lens, mask) in enumerate(self.train_loader):
                 data = data.to(self.device)
                 label = label.to(self.device)
-                
+
                 output = self.model((data, lens))
-                loss = self.crit(output, label[:,0])
+                loss = self.crit(output, label[:, 0])
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
@@ -161,7 +159,7 @@ class LOS_Trainer:
                     label = label.to(self.device)
 
                     output = self.model((data, lens))
-                    loss = self.crit(output, label[:,0])
+                    loss = self.crit(output, label[:, 0])
 
                     self.logger.update(output, label, loss)
 

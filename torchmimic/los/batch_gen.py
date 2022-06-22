@@ -27,9 +27,8 @@ class BatchGen(object):
         self.normalizer = normalizer
         self.shuffle = shuffle
 
-
         self._load_data(reader, discretizer, normalizer, steps)
-        
+
         self.steps = len(self.data)
 
     def _load_data(self, reader, discretizer, normalizer, steps):
@@ -55,7 +54,7 @@ class BatchGen(object):
     def __getitem__(self, idx):
         x = self.data[idx]
         sl = self.seq_lens[idx]
-        
+
         if self.partition == 10:
             y = get_bin_custom(self.labels[idx], 10)
         else:
@@ -65,6 +64,7 @@ class BatchGen(object):
 
     def __len__(self):
         return self.steps
+
 
 def read_chunk(reader, chunk_size):
     data = {}
