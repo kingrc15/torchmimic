@@ -7,18 +7,18 @@ from .utils import Logger
 from .batch_gen import BatchGen
 
 from ..models import LSTM_Model
-from ..readers import PhenotypingReader
+from ..readers import InHospitalMortalityReader
 from ..utils import *
 from ..preprocessing import Discretizer, Normalizer
 
 
-class Phenotype_Trainer:
+class Mortality_Trainer:
     def __init__(
         self,
         model,
         train_batch_size=8,
         test_batch_size=256,
-        data="/data/datasets/mimic3-benchmarks/data/phenotyping",
+        data="/data/datasets/mimic3-benchmarks/data/in-hospital-mortality/",
         learning_rate=0.001,
         weight_decay=0,
         report_freq=200,
@@ -48,13 +48,16 @@ class Phenotype_Trainer:
 
         torch.cuda.set_device(self.device)
 
-        train_reader = PhenotypingReader(
+        train_reader = InHospitalMortalityReader(
             dataset_dir=os.path.join(data, "train"),
             listfile=os.path.join(data, "train_listfile.csv"),
+            period_length=48.0,
         )
-        val_reader = PhenotypingReader(
+
+        val_reader = InHospitalMortalityReader(
             dataset_dir=os.path.join(data, "train"),
             listfile=os.path.join(data, "val_listfile.csv"),
+            period_length=48.0,
         )
 
         discretizer = Discretizer(
@@ -73,7 +76,7 @@ class Phenotype_Trainer:
 
         normalizer = Normalizer(fields=cont_channels)
         normalizer_state = (
-            "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
+            "../normalizers/ihm_ts1.0.input_str:previous.start_time:zero.normalizer"
         )
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
@@ -136,7 +139,7 @@ class Phenotype_Trainer:
                 label = label.to(self.device)
 
                 output = self.model((data, lens))
-                loss = self.crit(output, label)
+                loss = self.crit(output, label[:, None])
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
@@ -156,7 +159,7 @@ class Phenotype_Trainer:
                     label = label.to(self.device)
 
                     output = self.model((data, lens))
-                    loss = self.crit(output, label)
+                    loss = self.crit(output, label[:, None])
 
                     self.logger.update(output, label, loss)
 

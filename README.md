@@ -14,7 +14,7 @@ LSTM
 
 - [x] Phenotyping
 - [ ] Length of Stay
-- [ ] Decompensation
+- [x] Decompensation
 - [ ] In Hospital Mortality
 - [ ] Multitask
 
@@ -27,6 +27,6 @@ LSTM
 - [ ] Multitask LSTM
 - [ ] Multitask Channelwise LSTM
 
-## Testing
+### Testing
 
-`python -m pytest ./tests/*.py -s`
+- [ ] Test data for GitHub Workflow
