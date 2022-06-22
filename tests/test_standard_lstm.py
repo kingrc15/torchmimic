@@ -30,7 +30,7 @@ class TestLSTM(unittest.TestCase):
         )
 
         trainer.fit(2)
-        
+
     def test_standard_lstm_mortality(self):
         device = get_free_gpu()
 
