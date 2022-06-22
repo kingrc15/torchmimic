@@ -8,6 +8,8 @@ import numpy as np
 import random
 import os
 
+from .utils import get_bin_custom
+
 
 class BatchGen(object):
     def __init__(
@@ -15,30 +17,27 @@ class BatchGen(object):
         reader,
         discretizer,
         normalizer,
-        batch_size,
-        small_part,
-        target_repl,
+        partition,
+        steps,
         shuffle,
-        return_mask=False,
     ):
-        self.batch_size = batch_size
-        self.target_repl = target_repl
+        self.reader = reader
+        self.partition = partition
+        self.discretizer = discretizer
+        self.normalizer = normalizer
         self.shuffle = shuffle
-        self.return_mask = return_mask
 
-        self._load_data(reader, discretizer, normalizer, small_part)
+        self._load_data(reader, discretizer, normalizer, steps)
 
         self.steps = len(self.data)
 
-    def _load_data(self, reader, discretizer, normalizer, small_part=False):
+    def _load_data(self, reader, discretizer, normalizer, steps):
         N = reader.get_number_of_examples()
-        if small_part:
-            N = 1000
-        ret = read_chunk(reader, N)
-        data = ret["X"]
-        ts = ret["t"]
-        ys = ret["y"]
-        names = ret["name"]
+        ret = read_chunk(reader, steps)
+        data = ret["X"][:steps]
+        ts = ret["t"][:steps]
+        ys = ret["y"][:steps]
+        names = ret["name"][:steps]
         data = [discretizer.transform(X, end=t)[0] for (X, t) in zip(data, ts)]
         if normalizer is not None:
             data = [torch.Tensor(normalizer.transform(X)) for X in data]
@@ -54,31 +53,17 @@ class BatchGen(object):
 
     def __getitem__(self, idx):
         x = self.data[idx]
-        y = self.labels[idx]
         sl = self.seq_lens[idx]
+
+        if self.partition == 10:
+            y = get_bin_custom(self.labels[idx], 10)
+        else:
+            y = self.labels[idx]
 
         return x, y, sl
 
     def __len__(self):
         return self.steps
-
-
-def save_results(names, ts, predictions, labels, path):
-    n_tasks = 25
-    common_utils.create_directory(os.path.dirname(path))
-    with open(path, "w") as f:
-        header = ["stay", "period_length"]
-        header += ["pred_{}".format(x) for x in range(1, n_tasks + 1)]
-        header += ["label_{}".format(x) for x in range(1, n_tasks + 1)]
-        header = ",".join(header)
-        f.write(header + "\n")
-        for name, t, pred, y in zip(names, ts, predictions, labels):
-            line = [name]
-            line += ["{:.6f}".format(t)]
-            line += ["{:.6f}".format(a) for a in pred]
-            line += [str(a) for a in y]
-            line = ",".join(line)
-            f.write(line + "\n")
 
 
 def read_chunk(reader, chunk_size):
@@ -91,31 +76,6 @@ def read_chunk(reader, chunk_size):
             data[k].append(v)
     data["header"] = data["header"][0]
     return data
-
-
-def pad_zeros(arr, min_length=None):
-    """
-    `arr` is an array of `np.array`s
-    The function appends zeros to every `np.array` in `arr`
-    to equalize their first axis lenghts.
-    """
-    dtype = arr[0].dtype
-    max_len = max([x.shape[0] for x in arr])
-    ret = [
-        np.concatenate(
-            [x, np.zeros((max_len - x.shape[0],) + x.shape[1:], dtype=dtype)], axis=0
-        )
-        for x in arr
-    ]
-    if (min_length is not None) and ret[0].shape[0] < min_length:
-        ret = [
-            np.concatenate(
-                [x, np.zeros((min_length - x.shape[0],) + x.shape[1:], dtype=dtype)],
-                axis=0,
-            )
-            for x in ret
-        ]
-    return np.array(ret)
 
 
 def sort_and_shuffle(data, batch_size):

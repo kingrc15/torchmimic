@@ -1,12 +1,55 @@
 import wandb
 import glob
 import os
+import torch
 
 import numpy as np
 
 from ..utils import create_exp_dir
 
-from ..metrics import MetricMeter, AverageMeter, AUCROC
+from ..metrics import MetricMeter, AverageMeter, kappa, mae
+
+
+class CustomBins:
+    inf = 1e18
+    bins = [
+        (-inf, 1),
+        (1, 2),
+        (2, 3),
+        (3, 4),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 8),
+        (8, 14),
+        (14, +inf),
+    ]
+    nbins = len(bins)
+    means = [
+        11.450379,
+        35.070846,
+        59.206531,
+        83.382723,
+        107.487817,
+        131.579534,
+        155.643957,
+        179.660558,
+        254.306624,
+        585.325890,
+    ]
+
+
+def get_bin_custom(x, nbins, one_hot=False):
+    for i in range(nbins):
+        a = CustomBins.bins[i][0] * 24.0
+        b = CustomBins.bins[i][1] * 24.0
+        if a <= x < b:
+            if one_hot:
+                ret = torch.zeros((CustomBins.nbins,))
+                ret[i] = 1
+                return int(ret)
+            return torch.Tensor([i]).long()
+    return None
 
 
 class Logger:
@@ -29,8 +72,8 @@ class Logger:
 
         self.metrics = {
             "Loss": AverageMeter(),
-            "AUC-ROC Micro": MetricMeter(AUCROC("micro")),
-            "AUC-ROC Macro": MetricMeter(AUCROC("macro")),
+            "Cohen Kappa": MetricMeter(kappa),
+            "MAD": MetricMeter(mae),
         }
 
     def reset(self):
@@ -44,8 +87,8 @@ class Logger:
         outputs = outputs.cpu().detach().numpy()
 
         self.metrics["Loss"].update(loss.item(), batch_size)
-        self.metrics["AUC-ROC Micro"].update(label_tmp, outputs)
-        self.metrics["AUC-ROC Macro"].update(label_tmp, outputs)
+        self.metrics["Cohen Kappa"].update(label_tmp, outputs)
+        self.metrics["MAD"].update(label_tmp, outputs)
 
     def get_loss(self):
         return self.metrics["Loss"].avg

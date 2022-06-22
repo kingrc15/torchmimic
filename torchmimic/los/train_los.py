@@ -7,24 +7,25 @@ from .utils import Logger
 from .batch_gen import BatchGen
 
 from ..models import LSTM_Model
-from ..readers import PhenotypingReader
+from ..readers import LengthOfStayReader
 from ..utils import *
 from ..preprocessing import Discretizer, Normalizer
 
 
-class Phenotype_Trainer:
+class LOS_Trainer:
     def __init__(
         self,
         model,
         train_batch_size=8,
         test_batch_size=256,
-        data="/data/datasets/mimic3-benchmarks/data/phenotyping",
+        data="/data/datasets/mimic3-benchmarks/data/length-of-stay",
         learning_rate=0.001,
         weight_decay=0,
         report_freq=200,
         exp_name="Test",
         device="cpu",
         small_part=False,
+        partition=10,
         workers=5,
     ):
         super().__init__()
@@ -48,11 +49,11 @@ class Phenotype_Trainer:
 
         torch.cuda.set_device(self.device)
 
-        train_reader = PhenotypingReader(
+        train_reader = LengthOfStayReader(
             dataset_dir=os.path.join(data, "train"),
             listfile=os.path.join(data, "train_listfile.csv"),
         )
-        val_reader = PhenotypingReader(
+        val_reader = LengthOfStayReader(
             dataset_dir=os.path.join(data, "train"),
             listfile=os.path.join(data, "val_listfile.csv"),
         )
@@ -72,19 +73,22 @@ class Phenotype_Trainer:
         ]
 
         normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = (
-            "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
-        )
+        normalizer_state = "../normalizers/los_ts1.0.input_str:previous.start_time:zero.n5e4.normalizer"
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
+
+        train_nbatches = 2000
+        val_nbatches = 1000
+        if small_part:
+            train_nbatches = 20
+            val_nbatches = 20
 
         train_data_gen = BatchGen(
             train_reader,
             discretizer,
             normalizer,
-            train_batch_size,
-            small_part,
-            False,
+            partition,
+            train_nbatches,
             shuffle=False,
         )
 
@@ -92,9 +96,8 @@ class Phenotype_Trainer:
             val_reader,
             discretizer,
             normalizer,
-            test_batch_size,
-            small_part,
-            False,
+            partition,
+            val_nbatches,
             shuffle=False,
         )
 
@@ -124,7 +127,7 @@ class Phenotype_Trainer:
             betas=(0.9, 0.98),
         )
 
-        self.crit = nn.BCELoss()
+        self.crit = nn.CrossEntropyLoss()
 
     def fit(self, epochs):
 
@@ -136,7 +139,7 @@ class Phenotype_Trainer:
                 label = label.to(self.device)
 
                 output = self.model((data, lens))
-                loss = self.crit(output, label)
+                loss = self.crit(output, label[:, 0])
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
@@ -156,7 +159,7 @@ class Phenotype_Trainer:
                     label = label.to(self.device)
 
                     output = self.model((data, lens))
-                    loss = self.crit(output, label)
+                    loss = self.crit(output, label[:, 0])
 
                     self.logger.update(output, label, loss)
 
