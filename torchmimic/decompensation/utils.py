@@ -6,7 +6,7 @@ import numpy as np
 
 from ..utils import create_exp_dir
 
-from ..metrics import MetricMeter, AverageMeter, AUCROC
+from ..metrics import MetricMeter, AverageMeter, AUCROC, aucpr
 
 
 class Logger:
@@ -29,8 +29,8 @@ class Logger:
 
         self.metrics = {
             "Loss": AverageMeter(),
-            "AUC-ROC Micro": MetricMeter(AUCROC("micro")),
-            "AUC-ROC Macro": MetricMeter(AUCROC("macro")),
+            "AUC-ROC": MetricMeter(AUCROC("micro")),
+            "AUC-PR": MetricMeter(aucpr),
         }
 
     def reset(self):
@@ -44,8 +44,8 @@ class Logger:
         outputs = outputs.cpu().detach().numpy()
 
         self.metrics["Loss"].update(loss.item(), batch_size)
-        self.metrics["AUC-ROC Micro"].update(label_tmp, outputs)
-        self.metrics["AUC-ROC Macro"].update(label_tmp, outputs)
+        self.metrics["AUC-ROC"].update(label_tmp, outputs)
+        self.metrics["AUC-PR"].update(label_tmp, outputs)
 
     def get_loss(self):
         return self.metrics["Loss"].avg
