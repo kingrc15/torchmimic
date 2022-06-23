@@ -1,6 +1,6 @@
 # MIMIC Benchmark in PyTorch
 
-MIMIC Benchmark reimplemented in PyTorch. 
+MIMIC Benchmark reimplemented in PyTorch
 
 ## Data
 
@@ -11,7 +11,7 @@ from torchmimic.data import DecompensationDataset
 from torchmimic.data import IHMDataset
 from torchmimic.data import LOSDataset
 from torchmimic.data import PhenotypingDataset
-from torchmimic.data import MultitaaskDataset
+from torchmimic.data import MultitaskDataset
 ```
 
 ## Models
@@ -31,11 +31,11 @@ from torchmimic.models import StandardLSTM
 Each of the benchmarks can be found in `torchmimic.benchmarks`:
 
 ```
-from torchmimic.benchmarks import DecompensationDataset
-from torchmimic.benchmarks import IHMDataset
-from torchmimic.benchmarks import LOSDataset
-from torchmimic.benchmarks import PhenotypingDataset
-from torchmimic.benchmarks import MultitaaskDataset
+from torchmimic.benchmarks import DecompensationBenchmark
+from torchmimic.benchmarks import IHMBenchmark
+from torchmimic.benchmarks import LOSBenchmark
+from torchmimic.benchmarks import PhenotypingBenchmark
+from torchmimic.benchmarks import MultitaskBenchmark
 ```
 
 At a minimum, the benchmark need a model to be trained. You can create the model from one of our existing ones or you can create your own.
