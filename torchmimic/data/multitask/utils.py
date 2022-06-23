@@ -4,9 +4,20 @@ import os
 
 import numpy as np
 
-from ..utils import create_exp_dir
+from torch.nn.utils.rnn import pad_sequence
 
+from ..utils import create_exp_dir
 from ..metrics import MetricMeter, AverageMeter, AUCROC
+
+
+def pad_colalte(batch):
+    xx, yy, lens = zip(*batch)
+    print([x.shape for x in xx[0]])
+    x = pad_sequence(xx, batch_first=True, padding_value=-np.inf)
+    y = torch.stack(yy, dim=0)
+
+    mask = (x == -np.inf)[:, :, 0]
+    return x, y, lens, mask
 
 
 class Logger:

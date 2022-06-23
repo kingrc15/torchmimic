@@ -1,31 +1,28 @@
+import torch
 import torch.nn as nn
 
 from torch import optim
 from torch.utils.data import DataLoader
 
 from .utils import Logger
-from .batch_gen import BatchGen
 
-from ..models import LSTM_Model
-from ..readers import LengthOfStayReader
-from ..utils import *
-from ..preprocessing import Discretizer, Normalizer
+from torchmimic.data import PhenotypingDataset
+from torchmimic.utils import pad_colalte
 
 
-class LOS_Trainer:
+class PhenotypingBenchmark:
     def __init__(
         self,
         model,
         train_batch_size=8,
         test_batch_size=256,
-        data="/data/datasets/mimic3-benchmarks/data/length-of-stay",
+        data="/data/datasets/mimic3-benchmarks/data/phenotyping",
         learning_rate=0.001,
         weight_decay=0,
         report_freq=200,
         exp_name="Test",
         device="cpu",
-        small_part=False,
-        partition=10,
+        sample_size=None,
         workers=5,
     ):
         super().__init__()
@@ -49,69 +46,21 @@ class LOS_Trainer:
 
         torch.cuda.set_device(self.device)
 
-        train_reader = LengthOfStayReader(
-            dataset_dir=os.path.join(data, "train"),
-            listfile=os.path.join(data, "train_listfile.csv"),
-        )
-        val_reader = LengthOfStayReader(
-            dataset_dir=os.path.join(data, "train"),
-            listfile=os.path.join(data, "val_listfile.csv"),
-        )
+        train_dataset = PhenotypingDataset(data, train=True, steps=sample_size)
 
-        discretizer = Discretizer(
-            timestep=1.0,
-            store_masks=True,
-            impute_strategy="previous",
-            start_time="zero",
-        )
-
-        discretizer_header = discretizer.transform(train_reader.read_example(0)["X"])[
-            1
-        ].split(",")
-        cont_channels = [
-            i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
-        ]
-
-        normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = "../normalizers/los_ts1.0.input_str:previous.start_time:zero.n5e4.normalizer"
-        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
-        normalizer.load_params(normalizer_state)
-
-        train_nbatches = None
-        val_nbatches = None
-        if small_part:
-            train_nbatches = 20
-            val_nbatches = 20
-
-        train_data_gen = BatchGen(
-            train_reader,
-            discretizer,
-            normalizer,
-            partition,
-            train_nbatches,
-            shuffle=False,
-        )
-
-        test_data_gen = BatchGen(
-            val_reader,
-            discretizer,
-            normalizer,
-            partition,
-            val_nbatches,
-            shuffle=False,
-        )
+        test_dataset = PhenotypingDataset(data, train=False, steps=sample_size)
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
 
         self.train_loader = DataLoader(
-            train_data_gen,
+            train_dataset,
             batch_size=train_batch_size,
             shuffle=True,
             collate_fn=pad_colalte,
             **kwargs,
         )
         self.test_loader = DataLoader(
-            test_data_gen,
+            test_dataset,
             batch_size=test_batch_size,
             shuffle=False,
             collate_fn=pad_colalte,
@@ -127,7 +76,7 @@ class LOS_Trainer:
             betas=(0.9, 0.98),
         )
 
-        self.crit = nn.CrossEntropyLoss()
+        self.crit = nn.BCELoss()
 
     def fit(self, epochs):
 
@@ -139,7 +88,7 @@ class LOS_Trainer:
                 label = label.to(self.device)
 
                 output = self.model((data, lens))
-                loss = self.crit(output, label[:, 0])
+                loss = self.crit(output, label)
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
@@ -159,7 +108,7 @@ class LOS_Trainer:
                     label = label.to(self.device)
 
                     output = self.model((data, lens))
-                    loss = self.crit(output, label[:, 0])
+                    loss = self.crit(output, label)
 
                     self.logger.update(output, label, loss)
 

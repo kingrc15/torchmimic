@@ -1,18 +1,15 @@
+import torch
 import torch.nn as nn
-
 from torch import optim
 from torch.utils.data import DataLoader
 
+from torchmimic.data import DecompensationDataset
+from torchmimic.utils import pad_colalte
+
 from .utils import Logger
-from .batch_gen import BatchGen
-
-from ..models import LSTM_Model
-from ..readers import DecompensationReader
-from ..utils import *
-from ..preprocessing import Discretizer, Normalizer
 
 
-class Decompensation_Trainer:
+class DecompensationBenchmark:
     def __init__(
         self,
         model,
@@ -24,7 +21,7 @@ class Decompensation_Trainer:
         report_freq=200,
         exp_name="Test",
         device="cpu",
-        small_part=False,
+        sample_size=None,
         partition=10,
         workers=5,
     ):
@@ -49,69 +46,31 @@ class Decompensation_Trainer:
 
         torch.cuda.set_device(self.device)
 
-        train_reader = DecompensationReader(
-            dataset_dir=os.path.join(data, "train"),
-            listfile=os.path.join(data, "train_listfile.csv"),
-        )
-        val_reader = DecompensationReader(
-            dataset_dir=os.path.join(data, "train"),
-            listfile=os.path.join(data, "val_listfile.csv"),
+        train_dataset = DecompensationDataset(
+            data,
+            train=True,
+            partition=partition,
+            steps=sample_size,
         )
 
-        discretizer = Discretizer(
-            timestep=1.0,
-            store_masks=True,
-            impute_strategy="previous",
-            start_time="zero",
-        )
-
-        discretizer_header = discretizer.transform(train_reader.read_example(0)["X"])[
-            1
-        ].split(",")
-        cont_channels = [
-            i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
-        ]
-
-        normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = "../normalizers/decomp_ts1.0.input_str:previous.n1e5.start_time:zero.normalizer"
-        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
-        normalizer.load_params(normalizer_state)
-
-        train_nbatches = None
-        val_nbatches = None
-        if small_part:
-            train_nbatches = 1000
-            val_nbatches = 1000
-
-        train_data_gen = BatchGen(
-            train_reader,
-            discretizer,
-            normalizer,
-            partition,
-            train_nbatches,
-            shuffle=False,
-        )
-
-        test_data_gen = BatchGen(
-            val_reader,
-            discretizer,
-            normalizer,
-            partition,
-            val_nbatches,
-            shuffle=False,
+        test_dataset = DecompensationDataset(
+            data,
+            train=False,
+            partition=partition,
+            steps=sample_size,
         )
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
 
         self.train_loader = DataLoader(
-            train_data_gen,
+            train_dataset,
             batch_size=train_batch_size,
             shuffle=True,
             collate_fn=pad_colalte,
             **kwargs,
         )
         self.test_loader = DataLoader(
-            test_data_gen,
+            test_dataset,
             batch_size=test_batch_size,
             shuffle=False,
             collate_fn=pad_colalte,
