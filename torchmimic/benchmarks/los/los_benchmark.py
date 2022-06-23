@@ -1,30 +1,29 @@
+import torch
 import torch.nn as nn
 
 from torch import optim
 from torch.utils.data import DataLoader
 
 from .utils import Logger
-from .batch_gen import BatchGen
 
-from ..models import LSTM_Model
-from ..readers import InHospitalMortalityReader
-from ..utils import *
-from ..preprocessing import Discretizer, Normalizer
+from torchmimic.data import LOSDataset
+from torchmimic.utils import pad_colalte
 
 
-class Mortality_Trainer:
+class LOSBenchmark:
     def __init__(
         self,
         model,
         train_batch_size=8,
         test_batch_size=256,
-        data="/data/datasets/mimic3-benchmarks/data/in-hospital-mortality/",
+        data="/data/datasets/mimic3-benchmarks/data/length-of-stay",
         learning_rate=0.001,
         weight_decay=0,
         report_freq=200,
         exp_name="Test",
         device="cpu",
-        small_part=False,
+        sample_size=None,
+        partition=10,
         workers=5,
     ):
         super().__init__()
@@ -48,57 +47,16 @@ class Mortality_Trainer:
 
         torch.cuda.set_device(self.device)
 
-        train_reader = InHospitalMortalityReader(
-            dataset_dir=os.path.join(data, "train"),
-            listfile=os.path.join(data, "train_listfile.csv"),
-            period_length=48.0,
+        train_data_gen = LOSDataset(
+            data,
+            train=True,
+            steps=sample_size,
         )
 
-        val_reader = InHospitalMortalityReader(
-            dataset_dir=os.path.join(data, "train"),
-            listfile=os.path.join(data, "val_listfile.csv"),
-            period_length=48.0,
-        )
-
-        discretizer = Discretizer(
-            timestep=1.0,
-            store_masks=True,
-            impute_strategy="previous",
-            start_time="zero",
-        )
-
-        discretizer_header = discretizer.transform(train_reader.read_example(0)["X"])[
-            1
-        ].split(",")
-        cont_channels = [
-            i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
-        ]
-
-        normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = (
-            "../normalizers/ihm_ts1.0.input_str:previous.start_time:zero.normalizer"
-        )
-        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
-        normalizer.load_params(normalizer_state)
-
-        train_data_gen = BatchGen(
-            train_reader,
-            discretizer,
-            normalizer,
-            train_batch_size,
-            small_part,
-            False,
-            shuffle=False,
-        )
-
-        test_data_gen = BatchGen(
-            val_reader,
-            discretizer,
-            normalizer,
-            test_batch_size,
-            small_part,
-            False,
-            shuffle=False,
+        test_data_gen = LOSDataset(
+            data,
+            train=True,
+            steps=sample_size,
         )
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
@@ -127,7 +85,7 @@ class Mortality_Trainer:
             betas=(0.9, 0.98),
         )
 
-        self.crit = nn.BCELoss()
+        self.crit = nn.CrossEntropyLoss()
 
     def fit(self, epochs):
 
@@ -139,7 +97,7 @@ class Mortality_Trainer:
                 label = label.to(self.device)
 
                 output = self.model((data, lens))
-                loss = self.crit(output, label[:, None])
+                loss = self.crit(output, label[:, 0])
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
@@ -159,7 +117,7 @@ class Mortality_Trainer:
                     label = label.to(self.device)
 
                     output = self.model((data, lens))
-                    loss = self.crit(output, label[:, None])
+                    loss = self.crit(output, label[:, 0])
 
                     self.logger.update(output, label, loss)
 

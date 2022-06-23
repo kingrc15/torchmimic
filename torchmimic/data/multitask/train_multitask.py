@@ -1,30 +1,35 @@
+import os
+import torch
 import torch.nn as nn
 
 from torch import optim
 from torch.utils.data import DataLoader
 
-from .utils import Logger
+from .utils import Logger, pad_colalte
 from .batch_gen import BatchGen
 
-from ..models import LSTM_Model
-from ..readers import PhenotypingReader
-from ..utils import *
+from ..readers import MultitaskReader
 from ..preprocessing import Discretizer, Normalizer
 
 
-class Phenotype_Trainer:
+class Multitask_Trainer:
     def __init__(
         self,
         model,
+        ihm_C=1,
+        los_C=1,
+        pheno_C=1,
+        decomp_C=1,
         train_batch_size=8,
         test_batch_size=256,
-        data="/data/datasets/mimic3-benchmarks/data/phenotyping",
+        data="/data/datasets/mimic3-benchmarks/data/multitask",
         learning_rate=0.001,
         weight_decay=0,
         report_freq=200,
         exp_name="Test",
         device="cpu",
         small_part=False,
+        partition=10,
         workers=5,
     ):
         super().__init__()
@@ -48,11 +53,11 @@ class Phenotype_Trainer:
 
         torch.cuda.set_device(self.device)
 
-        train_reader = PhenotypingReader(
+        train_reader = MultitaskReader(
             dataset_dir=os.path.join(data, "train"),
             listfile=os.path.join(data, "train_listfile.csv"),
         )
-        val_reader = PhenotypingReader(
+        val_reader = MultitaskReader(
             dataset_dir=os.path.join(data, "train"),
             listfile=os.path.join(data, "val_listfile.csv"),
         )
@@ -73,19 +78,19 @@ class Phenotype_Trainer:
 
         normalizer = Normalizer(fields=cont_channels)
         normalizer_state = (
-            "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
+            "../normalizers/mult_ts1.0.input_str:previous.start_time:zero.normalizer"
         )
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
-
+        
         train_data_gen = BatchGen(
             train_reader,
             discretizer,
             normalizer,
             train_batch_size,
             small_part,
-            False,
-            shuffle=False,
+            small_part,
+            10,
         )
 
         test_data_gen = BatchGen(
@@ -94,8 +99,8 @@ class Phenotype_Trainer:
             normalizer,
             test_batch_size,
             small_part,
-            False,
-            shuffle=False,
+            small_part,
+            10,
         )
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}

@@ -1,9 +1,16 @@
 import unittest
-from torchmimic.phenotyping import Phenotype_Trainer
-from torchmimic.mortality import Mortality_Trainer
-from torchmimic.los import LOS_Trainer
-from torchmimic.decompensation import Decompensation_Trainer
-from torchmimic.models.LSTM import LSTM_Model
+
+from torchmimic.benchmarks import (
+    IHMBenchmark,
+    DecompensationBenchmark,
+    LOSBenchmark,
+    PhenotypingBenchmark
+)
+# from torchmimic.benchmarks.multitask import Multitask_Trainer
+
+
+from torchmimic.models import StandardLSTM
+
 from torchmimic.utils import get_free_gpu
 
 
@@ -11,7 +18,7 @@ class TestLSTM(unittest.TestCase):
     def test_standard_lstm_phenotype(self):
         device = get_free_gpu()
 
-        model = LSTM_Model(
+        model = StandardLSTM(
             n_classes=25,
             hidden_dim=256,
             num_layers=1,
@@ -19,7 +26,7 @@ class TestLSTM(unittest.TestCase):
             bidirectional=True,
         )
 
-        trainer = Phenotype_Trainer(
+        trainer = PhenotypingBenchmark(
             model=model,
             train_batch_size=8,
             test_batch_size=256,
@@ -28,15 +35,15 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            small_part=True,
+            sample_size=1000,
         )
 
         trainer.fit(2)
 
-    def test_standard_lstm_mortality(self):
+    def test_standard_lstm_ihm(self):
         device = get_free_gpu()
 
-        model = LSTM_Model(
+        model = StandardLSTM(
             n_classes=1,
             hidden_dim=256,
             num_layers=1,
@@ -44,7 +51,7 @@ class TestLSTM(unittest.TestCase):
             bidirectional=True,
         )
 
-        trainer = Mortality_Trainer(
+        trainer = IHMBenchmark(
             model=model,
             train_batch_size=8,
             test_batch_size=256,
@@ -53,7 +60,7 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            small_part=True,
+            sample_size=1000,
         )
 
         trainer.fit(2)
@@ -61,7 +68,7 @@ class TestLSTM(unittest.TestCase):
     def test_standard_lstm_los(self):
         device = get_free_gpu()
 
-        model = LSTM_Model(
+        model = StandardLSTM(
             n_classes=10,
             hidden_dim=256,
             num_layers=1,
@@ -69,7 +76,7 @@ class TestLSTM(unittest.TestCase):
             bidirectional=True,
         )
 
-        trainer = LOS_Trainer(
+        trainer = LOSBenchmark(
             model=model,
             train_batch_size=8,
             test_batch_size=256,
@@ -78,7 +85,7 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            small_part=True,
+            sample_size=20,
             partition=10,
         )
 
@@ -87,7 +94,7 @@ class TestLSTM(unittest.TestCase):
     def test_standard_lstm_decomp(self):
         device = get_free_gpu()
 
-        model = LSTM_Model(
+        model = StandardLSTM(
             n_classes=1,
             hidden_dim=256,
             num_layers=1,
@@ -95,7 +102,7 @@ class TestLSTM(unittest.TestCase):
             bidirectional=True,
         )
 
-        trainer = Decompensation_Trainer(
+        trainer = DecompensationBenchmark(
             model=model,
             train_batch_size=8,
             test_batch_size=256,
@@ -104,8 +111,34 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            small_part=True,
+            sample_size=1000,
             partition=10,
         )
 
         trainer.fit(2)
+        
+    # def test_standard_lstm_multi(self):
+    #     device = get_free_gpu()
+
+#         model = StandardLSTM(
+#             n_classes=1,
+#             hidden_dim=256,
+#             num_layers=1,
+#             dropout_rate=0.3,
+#             bidirectional=True,
+#         )
+
+#         trainer = Multitask_Trainer(
+#             model=model,
+#             train_batch_size=8,
+#             test_batch_size=256,
+#             data="/data/datasets/mimic3-benchmarks/data/multitask",
+#             learning_rate=0.001,
+#             weight_decay=0,
+#             report_freq=200,
+#             device=device,
+#             small_part=True,
+#             partition=10,
+#         )
+
+#         trainer.fit(2)
