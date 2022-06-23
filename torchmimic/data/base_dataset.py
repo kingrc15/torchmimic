@@ -19,10 +19,10 @@ class BaseDataset(ABC):
 
     def _load_data(self, steps):
         N = self.reader.get_number_of_examples()
-        
+
         if steps is None:
             step = N
-            
+
         ret = read_chunk(self.reader, steps)
         if steps is None:
             data = ret["X"]

@@ -12,6 +12,7 @@ from torchmimic.data.readers import DecompensationReader
 from torchmimic.data.utils import read_chunk
 from torchmimic.data.base_dataset import BaseDataset
 
+
 class DecompensationDataset(BaseDataset):
     def __init__(
         self,
@@ -21,14 +22,14 @@ class DecompensationDataset(BaseDataset):
         steps=None,
     ):
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
-        
+
         self.partition = partition
-        
+
         self._read_data(root, listfile)
         self._load_data(steps)
 
         self.steps = len(self.data)
-        
+
     def _read_data(self, root, listfile):
         self.reader = DecompensationReader(
             dataset_dir=os.path.join(root, "train"),
@@ -42,9 +43,9 @@ class DecompensationDataset(BaseDataset):
             start_time="zero",
         )
 
-        discretizer_header = self.discretizer.transform(self.reader.read_example(0)["X"])[
-            1
-        ].split(",")
+        discretizer_header = self.discretizer.transform(
+            self.reader.read_example(0)["X"]
+        )[1].split(",")
         cont_channels = [
             i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
         ]

@@ -8,6 +8,7 @@ import numpy as np
 from torchmimic.utils import create_exp_dir
 from torchmimic.metrics import MetricMeter, AverageMeter, kappa, mae
 
+
 class Logger:
     def __init__(self, config, wandb=False):
         exp_name = config["exp_name"]

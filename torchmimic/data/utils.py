@@ -1,5 +1,6 @@
 import torch
 
+
 def read_chunk(reader, chunk_size):
     data = {}
     for i in range(chunk_size):
@@ -10,6 +11,7 @@ def read_chunk(reader, chunk_size):
             data[k].append(v)
     data["header"] = data["header"][0]
     return data
+
 
 class CustomBins:
     inf = 1e18

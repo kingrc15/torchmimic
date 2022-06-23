@@ -9,6 +9,7 @@ from .utils import Logger
 from torchmimic.data import IHMDataset
 from torchmimic.utils import pad_colalte
 
+
 class IHMBenchmark:
     def __init__(
         self,
@@ -44,13 +45,13 @@ class IHMBenchmark:
         self.logger = Logger(config)
 
         torch.cuda.set_device(self.device)
-        
+
         train_dataset = IHMDataset(
             data,
             train=True,
             steps=sample_size,
         )
-        
+
         test_dataset = IHMDataset(
             data,
             train=False,

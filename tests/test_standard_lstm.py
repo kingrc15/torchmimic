@@ -4,8 +4,9 @@ from torchmimic.benchmarks import (
     IHMBenchmark,
     DecompensationBenchmark,
     LOSBenchmark,
-    PhenotypingBenchmark
+    PhenotypingBenchmark,
 )
+
 # from torchmimic.benchmarks.multitask import Multitask_Trainer
 
 
@@ -116,9 +117,10 @@ class TestLSTM(unittest.TestCase):
         )
 
         trainer.fit(2)
-        
+
     # def test_standard_lstm_multi(self):
     #     device = get_free_gpu()
+
 
 #         model = StandardLSTM(
 #             n_classes=1,

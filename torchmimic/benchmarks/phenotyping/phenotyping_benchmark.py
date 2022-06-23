@@ -46,17 +46,9 @@ class PhenotypingBenchmark:
 
         torch.cuda.set_device(self.device)
 
-        train_dataset = PhenotypingDataset(
-            data,
-            train=True,
-            steps=sample_size
-        )
+        train_dataset = PhenotypingDataset(data, train=True, steps=sample_size)
 
-        test_dataset = PhenotypingDataset(
-            data,
-            train=False,
-            steps=sample_size
-        )
+        test_dataset = PhenotypingDataset(data, train=False, steps=sample_size)
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
 

@@ -8,6 +8,7 @@ from torchmimic.utils import pad_colalte
 
 from .utils import Logger
 
+
 class DecompensationBenchmark:
     def __init__(
         self,
@@ -51,7 +52,7 @@ class DecompensationBenchmark:
             partition=partition,
             steps=sample_size,
         )
-        
+
         test_dataset = DecompensationDataset(
             data,
             train=False,

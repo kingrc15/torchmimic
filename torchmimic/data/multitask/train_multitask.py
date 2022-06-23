@@ -82,7 +82,7 @@ class Multitask_Trainer:
         )
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
-        
+
         train_data_gen = BatchGen(
             train_reader,
             discretizer,

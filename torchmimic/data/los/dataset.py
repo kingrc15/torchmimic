@@ -27,7 +27,7 @@ class LOSDataset(BaseDataset):
 
         self.steps = len(self.data)
         self.partition = partition
-        
+
     def _read_data(self, root, listfile):
         self.reader = LengthOfStayReader(
             dataset_dir=os.path.join(root, "train"),
@@ -41,9 +41,9 @@ class LOSDataset(BaseDataset):
             start_time="zero",
         )
 
-        discretizer_header = self.discretizer.transform(self.reader.read_example(0)["X"])[
-            1
-        ].split(",")
+        discretizer_header = self.discretizer.transform(
+            self.reader.read_example(0)["X"]
+        )[1].split(",")
         cont_channels = [
             i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
         ]

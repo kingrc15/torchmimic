@@ -21,12 +21,12 @@ class IHMDataset(BaseDataset):
         steps=None,
     ):
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
-        
+
         self._read_data(root, listfile)
         self._load_data(steps)
 
         self.steps = len(self.data)
-        
+
     def _read_data(self, root, listfile):
         self.reader = InHospitalMortalityReader(
             dataset_dir=os.path.join(root, "train"),
@@ -40,14 +40,16 @@ class IHMDataset(BaseDataset):
             start_time="zero",
         )
 
-        discretizer_header = self.discretizer.transform(self.reader.read_example(0)["X"])[
-            1
-        ].split(",")
+        discretizer_header = self.discretizer.transform(
+            self.reader.read_example(0)["X"]
+        )[1].split(",")
         cont_channels = [
             i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
         ]
 
         self.normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = "../normalizers/ihm_ts1.0.input_str:previous.start_time:zero.normalizer"
+        normalizer_state = (
+            "../normalizers/ihm_ts1.0.input_str:previous.start_time:zero.normalizer"
+        )
         normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         self.normalizer.load_params(normalizer_state)
