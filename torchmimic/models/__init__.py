@@ -1,1 +1,1 @@
-from .LSTM import StandardLSTM
+from .lstm import StandardLSTM

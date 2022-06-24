@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from torchmimic.data import DecompensationDataset
 from torchmimic.utils import pad_colalte
 
-from .utils import Logger
+from torchmimic.loggers import DecompensationLogger
 
 
 class DecompensationBenchmark:
@@ -22,14 +22,9 @@ class DecompensationBenchmark:
         exp_name="Test",
         device="cpu",
         sample_size=None,
-        partition=10,
         workers=5,
+        wandb=False,
     ):
-        super().__init__()
-
-        config = {
-            "exp_name": exp_name,
-        }
 
         self.test_batch_size = test_batch_size
         self.train_batch_size = train_batch_size
@@ -39,25 +34,24 @@ class DecompensationBenchmark:
         self.device = device
         self.report_freq = report_freq
 
+        config = {}
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = Logger(config)
+        self.logger = DecompensationLogger(exp_name + "_decomp", config, wandb)
 
         torch.cuda.set_device(self.device)
 
         train_dataset = DecompensationDataset(
             data,
             train=True,
-            partition=partition,
-            steps=sample_size,
+            n_samples=sample_size,
         )
 
         test_dataset = DecompensationDataset(
             data,
             train=False,
-            partition=partition,
-            steps=sample_size,
+            n_samples=sample_size,
         )
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}

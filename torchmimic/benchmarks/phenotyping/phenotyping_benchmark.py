@@ -4,8 +4,7 @@ import torch.nn as nn
 from torch import optim
 from torch.utils.data import DataLoader
 
-from .utils import Logger
-
+from torchmimic.loggers import PhenotypingLogger
 from torchmimic.data import PhenotypingDataset
 from torchmimic.utils import pad_colalte
 
@@ -24,12 +23,8 @@ class PhenotypingBenchmark:
         device="cpu",
         sample_size=None,
         workers=5,
+        wandb=False,
     ):
-        super().__init__()
-
-        config = {
-            "exp_name": exp_name,
-        }
 
         self.test_batch_size = test_batch_size
         self.train_batch_size = train_batch_size
@@ -39,16 +34,16 @@ class PhenotypingBenchmark:
         self.device = device
         self.report_freq = report_freq
 
+        config = {}
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = Logger(config)
+        self.logger = PhenotypingLogger(exp_name + "_ph", config, wandb)
 
         torch.cuda.set_device(self.device)
 
-        train_dataset = PhenotypingDataset(data, train=True, steps=sample_size)
-
-        test_dataset = PhenotypingDataset(data, train=False, steps=sample_size)
+        train_dataset = PhenotypingDataset(data, train=True, n_samples=sample_size)
+        test_dataset = PhenotypingDataset(data, train=False, n_samples=sample_size)
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
 

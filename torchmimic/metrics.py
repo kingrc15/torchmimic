@@ -11,87 +11,200 @@ from sklearn.metrics import (
 )
 
 
-def kappa(Y, Y_pred):
-    Y_pred = np.argmax(Y_pred, axis=1)
-    Y = Y[:, 0]
-    return cohen_kappa_score(Y, Y_pred, weights="linear")
+def kappa(true, pred):
+    """
+    Returns the Cohen's Kappa for the provided true and predicted values
+
+    :param true: true values
+    :type true: np.array
+    :param pred: predicted values
+    :type pred: np.array
+    :return: Cohen's Kappa score
+    :rtype: int
+    """
+    pred = np.argmax(pred, axis=1)
+    true = true[:, 0]
+    return cohen_kappa_score(true, pred, weights="linear")
 
 
-def cluster_acc(Y, Y_pred):
-    Y_pred, Y = np.array(Y_pred, dtype=np.int64), np.array(Y, dtype=np.int64)
-    assert Y_pred.size == Y.size
-    D = max(Y_pred.max(), Y.max()) + 1
-    w = np.zeros((D, D), dtype=np.int64)
-    for i in range(Y_pred.size):
-        w[Y_pred[i], Y[i]] += 1
-    row, col = linear_sum_assignment(w.max() - w)
-    return (
-        sum([w[row[i], col[i]] for i in range(row.shape[0])]) * 1.0 / Y_pred.size
-    ) * 100
+def accuracy(true, pred):
+    """
+    Returns the accuracy for the provided true and predicted values
+
+    :param true: true values
+    :type true: np.array
+    :param pred: predicted values
+    :type pred: np.array
+    :return: accuracy score
+    :rtype: int
+    """
+    return (sum(true == pred) / len(pred)) * 100
 
 
-def accuracy(Y, Y_pred):
-    return (sum(Y == Y_pred) / len(Y_pred)) * 100
+def f1(true, pred):
+    """
+    Returns the F1-score for the provided true and predicted values
+
+    :param true: true values
+    :type true: np.array
+    :param pred: predicted values
+    :type pred: np.array
+    :return: F1-score
+    :rtype: int
+    """
+    return f1_score(true, pred)
 
 
-def f1(Y, Y_pred):
-    return f1_score(Y, Y_pred)
+def balanced_accuracy(true, pred):
+    """
+    Returns the Balanced Accuracy for the provided true and predicted values
+
+    :param true: true values
+    :type true: np.array
+    :param pred: predicted values
+    :type pred: np.array
+    :return: Balanced Accuracy score
+    :rtype: int
+    """
+    return balanced_accuracy_score(true, pred)
 
 
-def balanced_accuracy(Y, Y_pred):
-    return balanced_accuracy_score(Y, Y_pred)
+def mae(true, pred):
+    """
+    Returns the Mean Absolute Error/Deviation for the provided true and predicted values
+
+    :param true: true values
+    :type true: np.array
+    :param pred: predicted values
+    :type pred: np.array
+    :return: MAE/MAD score
+    :rtype: int
+    """
+    one_hot = np.zeros((true.size, true.max() + 1))
+    for i in np.arange(true.size):
+        one_hot[np.arange(true.size), true[i]] = 1
+    return mean_absolute_error(one_hot, pred)
 
 
-def mae(Y, Y_pred):
-    one_hot = np.zeros((Y.size, Y.max() + 1))
-    for i in np.arange(Y.size):
-        one_hot[np.arange(Y.size), Y[i]] = 1
-    return mean_absolute_error(one_hot, Y_pred)
+def aucpr(true, pred):
+    """
+    Returns the AUC-PR for the provided true and predicted values
 
-
-def aucpr(Y, Y_pred):
-    (precisions, recalls, thresholds) = precision_recall_curve(Y, Y_pred)
+    :param true: true values
+    :type true: np.array
+    :param pred: predicted values
+    :type pred: np.array
+    :return: AUC-PR score
+    :rtype: int
+    """
+    (precisions, recalls, _) = precision_recall_curve(true, pred)
     return auc(recalls, precisions)
 
 
 class AUCROC:
-    def __init__(self, type="micro"):
-        self.type = type
+    """
+    AUCROC scoring class
+    """
 
-    def __call__(self, Y, Y_pred):
-        return roc_auc_score(Y, Y_pred, multi_class="ovr", average=self.type)
+    def __init__(self, average=None):
+        """
+        Initialization for AUCROC class
+
+        :param average: type of average used for multiclass.
+        :type average: str
+        """
+        self.average = average
+
+    def __call__(self, true, pred):
+        """
+        Returns the AUC-ROC for the provided true and predicted values
+
+        :param true: true values
+        :type true: np.array
+        :param pred: predicted values
+        :type pred: np.array
+        :return: AUC-ROC score
+        :rtype: int
+        """
+        return roc_auc_score(true, pred, multi_class="ovr", average=self.average)
 
 
 class AverageMeter:
+    """
+    Class used to collect values and return a running average
+    """
+
     def __init__(self):
-        self.reset()
+        """
+        Initializae the AverageMeter class
+        """
+        self.avg = 0
+        self.sum = 0
+        self.cnt = 0
 
     def reset(self):
+        """
+        Resets private members
+        """
         self.avg = 0
         self.sum = 0
         self.cnt = 0
 
     def update(self, val, _n=1):
+        """
+        Updates class members
+
+        :param val: value used to update running average
+        :type val: float
+        :param _n: sample size used to calculate value
+        :type _n: int
+        """
         self.sum += val * _n
         self.cnt += _n
         self.avg = self.sum / self.cnt
 
 
 class MetricMeter:
+    """
+    Class used to collect values and evaluate them using a scoring function
+    """
+
     def __init__(self, score_fn):
+        """
+        Initializae the MetricMeter Class
+
+        :param score_fn: scoring function
+        :type score_fn: function
+        """
         super().__init__()
         self.reset()
         self.score_fn = score_fn
 
     def reset(self):
-        self.Y = []
-        self.Y_pred = []
+        """
+        Resets private members
+        """
+        self.true = []
+        self.pred = []
 
-    def update(self, Y, Y_pred):
-        self.Y_pred.append(Y_pred)
-        self.Y.append(Y)
+    def update(self, true, pred):
+        """
+        Updates list of true and predicted values
+
+        :param true: true labels
+        :type true: np.array
+        :param pred: predicted labels
+        :type pred: np.array
+        """
+        self.pred.append(pred)
+        self.true.append(true)
 
     def score(self):
-        self.Y = np.concatenate(self.Y, axis=0)
-        self.Y_pred = np.concatenate(self.Y_pred, axis=0)
-        return self.score_fn(self.Y, self.Y_pred)
+        """
+        Scores true and predicted values
+        :returns: the output of the score function given the predicted and true labels
+        :rtype: int
+        """
+        self.true = np.concatenate(self.true, axis=0)
+        self.pred = np.concatenate(self.pred, axis=0)
+        return self.score_fn(self.true, self.pred)

@@ -1,13 +1,9 @@
 import os
-import numpy as np
 import random
-import torch
-
-from torch.utils.data import Dataset
-from torchvision import transforms
+import numpy as np
 
 
-class Reader(object):
+class Reader:
     def __init__(self, dataset_dir, listfile=None):
         self._dataset_dir = dataset_dir
         self._current_index = 0

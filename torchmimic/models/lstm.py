@@ -20,7 +20,7 @@ class StandardLSTM(nn.Module):
 
         if bidirectional:
             self.hidden_dim = hidden_dim // 2
-            
+
         if num_layers == 1:
             dropout_rate = 0
 
@@ -46,7 +46,7 @@ class StandardLSTM(nn.Module):
         lens = data[1]
         packed = pack_padded_sequence(seq, lens, batch_first=True, enforce_sorted=False)
 
-        z, (hn, cn) = self.lstm_layer(packed)
+        z, (_, _) = self.lstm_layer(packed)
 
         seq_unpacked, lens_unpacked = pad_packed_sequence(z, batch_first=True)
         output = self.final_layer(

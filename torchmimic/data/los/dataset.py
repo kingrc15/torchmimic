@@ -14,18 +14,44 @@ from torchmimic.data.base_dataset import BaseDataset
 
 
 class LOSDataset(BaseDataset):
+    """
+    Length-of-Stay dataset that can be directly used by PyTorch dataloaders. This class preprocessing the data the same way as "Multitask learning and benchmarking with clinical time series data": https://github.com/YerevaNN/mimic3-benchmarks
+
+    :param root: directory where data is located
+    :type root: str
+    :param train: if true, the training split of the data will be used. Otherwise, the validation dataset will be used
+    :type train: bool
+    :param partition: number of patitions to use for binning
+    :type steps: int
+    :param n_samples: number of samples to use. If None, all the data is used
+    :type steps: int
+    """
+
     def __init__(
         self,
         root,
         train=True,
         partition=10,
-        steps=None,
+        n_samples=None,
     ):
+        """
+        Initialize LOSDataset
+
+        :param root: directory where data is located
+        :type root: str
+        :param train: if true, the training split of the data will be used. Otherwise, the validation dataset will be used
+        :type train: bool
+        :param partition: number of patitions to use for binning
+        :type steps: int
+        :param n_samples: number of samples to use. If None, all the data is used
+        :type steps: int
+        """
+
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
         self._read_data(root, listfile)
-        self._load_data(steps)
+        self._load_data(n_samples)
 
-        self.steps = len(self.data)
+        self.n_samples = len(self.data)
         self.partition = partition
 
     def _read_data(self, root, listfile):
