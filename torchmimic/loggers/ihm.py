@@ -1,5 +1,5 @@
+from torchmimic.metrics import MetricMeter, AUCROC, aucpr
 from .base_logger import BaseLogger
-from torchmimic.metrics import MetricMeter, AverageMeter, AUCROC, aucpr
 
 
 class IHMLogger(BaseLogger):

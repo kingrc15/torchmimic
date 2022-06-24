@@ -1,6 +1,6 @@
 import os
-import torch
 import shutil
+import torch
 
 import numpy as np
 from torch.nn.utils.rnn import pad_sequence
@@ -18,7 +18,7 @@ def pad_colalte(batch):
 def create_exp_dir(path, scripts_to_save=None):
     if not os.path.exists(path):
         os.mkdir(path)
-    print("Experiment dir: {}".format(path))
+    print(f"Experiment dir: {path}")
 
     if scripts_to_save is not None:
         if not os.path.exists(os.path.join(path, "scripts")):

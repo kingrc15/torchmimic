@@ -37,7 +37,6 @@ class TestLSTM(unittest.TestCase):
 
         trainer.fit(1000)
 
-
     def test_standard_lstm_ihm(self):
         device = 0
 
@@ -116,6 +115,7 @@ class TestLSTM(unittest.TestCase):
         )
 
         trainer.fit(100)
+
 
 #     def test_standard_lstm_multi(self):
 #         device = get_free_gpu()

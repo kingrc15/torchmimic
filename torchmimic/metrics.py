@@ -11,7 +11,7 @@ from sklearn.metrics import (
 )
 
 
-def kappa(Y, Y_pred):
+def kappa(true, pred):
     """
     Returns the Cohen's Kappa for the provided true and predicted values
 
@@ -22,33 +22,9 @@ def kappa(Y, Y_pred):
     :return: Cohen's Kappa score
     :rtype: int
     """
-    Y_pred = np.argmax(Y_pred, axis=1)
-    Y = Y[:, 0]
-    return cohen_kappa_score(Y, Y_pred, weights="linear")
-
-
-def cluster_acc(true, pred):
-    """
-    Returns the cluster accuracy for the provided true and predicted values
-
-    :param true: true values
-    :type true: np.array
-    :param pred: predicted values
-    :type pred: np.array
-    :return: cluster accuracy score
-    :rtype: int
-    """
-
-    pred, true = np.array(pred, dtype=np.int64), np.array(true, dtype=np.int64)
-    assert pred.size == true
-    D = max(pred.max(), true.max()) + 1
-    w = np.zeros((D, D), dtype=np.int64)
-    for i in range(pred.size):
-        w[pred[i], true[i]] += 1
-    row, col = linear_sum_assignment(w.max() - w)
-    return (
-        sum([w[row[i], col[i]] for i in range(row.shape[0])]) * 1.0 / pred.size
-    ) * 100
+    pred = np.argmax(pred, axis=1)
+    true = true[:, 0]
+    return cohen_kappa_score(true, pred, weights="linear")
 
 
 def accuracy(true, pred):
@@ -121,7 +97,7 @@ def aucpr(true, pred):
     :return: AUC-PR score
     :rtype: int
     """
-    (precisions, recalls, thresholds) = precision_recall_curve(true, pred)
+    (precisions, recalls, _) = precision_recall_curve(true, pred)
     return auc(recalls, precisions)
 
 
@@ -130,14 +106,14 @@ class AUCROC:
     AUCROC scoring class
     """
 
-    def __init__(self, type=None):
+    def __init__(self, average=None):
         """
         Initialization for AUCROC class
 
-        :param type: type of average used for multiclass.
-        :type type: str
+        :param average: type of average used for multiclass.
+        :type average: str
         """
-        self.type = type
+        self.average = average
 
     def __call__(self, true, pred):
         """
@@ -150,7 +126,7 @@ class AUCROC:
         :return: AUC-ROC score
         :rtype: int
         """
-        return roc_auc_score(true, pred, multi_class="ovr", average=self.type)
+        return roc_auc_score(true, pred, multi_class="ovr", average=self.average)
 
 
 class AverageMeter:
@@ -162,7 +138,9 @@ class AverageMeter:
         """
         Initializae the AverageMeter class
         """
-        self.reset()
+        self.avg = 0
+        self.sum = 0
+        self.cnt = 0
 
     def reset(self):
         """

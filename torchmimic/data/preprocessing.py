@@ -1,8 +1,8 @@
-import numpy as np
 import platform
 import pickle
 import json
 import os
+import numpy as np
 
 
 class Discretizer:

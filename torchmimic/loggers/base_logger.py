@@ -1,9 +1,11 @@
-import wandb
 import glob
 import os
 
-import numpy as np
 from abc import ABC, abstractmethod
+
+import numpy as np
+import torch
+import wandb
 
 from torchmimic.metrics import AverageMeter, MetricMeter
 from torchmimic.utils import create_exp_dir
@@ -87,7 +89,7 @@ class BaseLogger(ABC):
         :type split: str
         """
 
-        assert split == "Train" or split == "Eval"
+        assert split in ("Train", "Eval")
 
         result_str = split + ": "
 

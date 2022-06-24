@@ -1,5 +1,5 @@
+from torchmimic.metrics import MetricMeter, AUCROC
 from .base_logger import BaseLogger
-from torchmimic.metrics import MetricMeter, AverageMeter, AUCROC
 
 
 class PhenotypingLogger(BaseLogger):

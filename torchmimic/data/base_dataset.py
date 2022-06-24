@@ -1,18 +1,19 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import random
-import os
+from abc import ABC, abstractmethod
+
 import torch
 
-import numpy as np
-
-from abc import ABC, abstractmethod
-from torchmimic.data.preprocessing import Discretizer, Normalizer
 from torchmimic.data.utils import read_chunk
 
 
 class BaseDataset(ABC):
+    def __init__(self):
+        self.reader = None
+        self.discretizer = None
+        self.normalizer = None
+
     @abstractmethod
     def _read_data(self, root, listfile):
         pass

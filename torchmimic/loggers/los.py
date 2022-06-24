@@ -1,5 +1,5 @@
+from torchmimic.metrics import MetricMeter, kappa, mae
 from .base_logger import BaseLogger
-from torchmimic.metrics import MetricMeter, AverageMeter, kappa, mae
 
 
 class LOSLogger(BaseLogger):
