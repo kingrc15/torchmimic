@@ -4,8 +4,7 @@ import torch.nn as nn
 from torch import optim
 from torch.utils.data import DataLoader
 
-from .utils import Logger
-
+from torchmimic.loggers import LOSLogger
 from torchmimic.data import LOSDataset
 from torchmimic.utils import pad_colalte
 
@@ -25,12 +24,8 @@ class LOSBenchmark:
         sample_size=None,
         partition=10,
         workers=5,
+        wandb=False,
     ):
-        super().__init__()
-
-        config = {
-            "exp_name": exp_name,
-        }
 
         self.test_batch_size = test_batch_size
         self.train_batch_size = train_batch_size
@@ -40,23 +35,24 @@ class LOSBenchmark:
         self.device = device
         self.report_freq = report_freq
 
+        config = {}
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = Logger(config)
+        self.logger = LOSLogger(exp_name+"_los", config, wandb)
 
         torch.cuda.set_device(self.device)
 
         train_data_gen = LOSDataset(
             data,
             train=True,
-            steps=sample_size,
+            n_samples=sample_size,
         )
 
         test_data_gen = LOSDataset(
             data,
             train=True,
-            steps=sample_size,
+            n_samples=sample_size,
         )
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}

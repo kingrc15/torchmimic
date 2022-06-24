@@ -4,8 +4,7 @@ import torch.nn as nn
 from torch import optim
 from torch.utils.data import DataLoader
 
-from .utils import Logger
-
+from torchmimic.loggers import IHMLogger
 from torchmimic.data import IHMDataset
 from torchmimic.utils import pad_colalte
 
@@ -24,12 +23,8 @@ class IHMBenchmark:
         device="cpu",
         sample_size=None,
         workers=5,
+        wandb=False
     ):
-        super().__init__()
-
-        config = {
-            "exp_name": exp_name,
-        }
 
         self.test_batch_size = test_batch_size
         self.train_batch_size = train_batch_size
@@ -39,23 +34,24 @@ class IHMBenchmark:
         self.device = device
         self.report_freq = report_freq
 
+        config = {}
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = Logger(config)
+        self.logger = IHMLogger(exp_name + "_ihm", config, wandb)
 
         torch.cuda.set_device(self.device)
 
         train_dataset = IHMDataset(
             data,
             train=True,
-            steps=sample_size,
+            n_samples=sample_size,
         )
 
         test_dataset = IHMDataset(
             data,
             train=False,
-            steps=sample_size,
+            n_samples=sample_size,
         )
 
         kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}

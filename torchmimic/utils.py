@@ -6,12 +6,6 @@ import numpy as np
 from torch.nn.utils.rnn import pad_sequence
 
 
-def get_free_gpu():
-    os.system("nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp")
-    memory_available = [int(x.split()[2]) for x in open("tmp", "r").readlines()]
-    return int(np.argmax(memory_available))
-
-
 def pad_colalte(batch):
     xx, yy, lens = zip(*batch)
     x = pad_sequence(xx, batch_first=True, padding_value=-np.inf)
