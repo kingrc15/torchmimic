@@ -39,7 +39,7 @@ class LOSBenchmark:
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = LOSLogger(exp_name+"_los", config, wandb)
+        self.logger = LOSLogger(exp_name + "_los", config, wandb)
 
         torch.cuda.set_device(self.device)
 

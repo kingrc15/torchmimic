@@ -1,6 +1,12 @@
 # MIMIC Benchmark in PyTorch
 
-MIMIC Benchmark reimplemented in PyTorch
+MIMIC Benchmark reimplemented in PyTorch :fire:
+
+To install, run:
+
+```
+pip install torchmimic
+```
 
 ## Data
 
@@ -68,10 +74,3 @@ This library has built-in logging of model configurations and key metrics using 
 ### Testing
 
 - [ ] Test data for GitHub Workflow
-
-### Documentation
-- [ ] Phenotyping Examples
-- [ ] Length of Stay Examples
-- [ ] Decompensation Examples
-- [ ] In Hospital Mortality Examples
-- [ ] Multitask Examples

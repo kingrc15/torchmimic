@@ -23,7 +23,7 @@ class IHMBenchmark:
         device="cpu",
         sample_size=None,
         workers=5,
-        wandb=False
+        wandb=False,
     ):
 
         self.test_batch_size = test_batch_size

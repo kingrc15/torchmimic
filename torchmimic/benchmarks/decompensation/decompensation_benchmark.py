@@ -38,7 +38,7 @@ class DecompensationBenchmark:
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = DecompensationLogger(exp_name+"_decomp", config, wandb)
+        self.logger = DecompensationLogger(exp_name + "_decomp", config, wandb)
 
         torch.cuda.set_device(self.device)
 

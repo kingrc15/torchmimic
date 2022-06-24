@@ -38,7 +38,7 @@ def cluster_acc(true, pred):
     :return: cluster accuracy score
     :rtype: int
     """
-    
+
     pred, true = np.array(pred, dtype=np.int64), np.array(true, dtype=np.int64)
     assert pred.size == true
     D = max(pred.max(), true.max()) + 1
@@ -129,6 +129,7 @@ class AUCROC:
     """
     AUCROC scoring class
     """
+
     def __init__(self, type=None):
         """
         Initialization for AUCROC class
@@ -141,7 +142,7 @@ class AUCROC:
     def __call__(self, true, pred):
         """
         Returns the AUC-ROC for the provided true and predicted values
-        
+
         :param true: true values
         :type true: np.array
         :param pred: predicted values
@@ -156,6 +157,7 @@ class AverageMeter:
     """
     Class used to collect values and return a running average
     """
+
     def __init__(self):
         """
         Initializae the AverageMeter class
@@ -186,8 +188,9 @@ class AverageMeter:
 
 class MetricMeter:
     """
-    Class used to collect values and evaluate them using a scoring function 
+    Class used to collect values and evaluate them using a scoring function
     """
+
     def __init__(self, score_fn):
         """
         Initializae the MetricMeter Class

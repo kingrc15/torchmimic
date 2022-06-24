@@ -20,7 +20,7 @@ class StandardLSTM(nn.Module):
 
         if bidirectional:
             self.hidden_dim = hidden_dim // 2
-            
+
         if num_layers == 1:
             dropout_rate = 0
 

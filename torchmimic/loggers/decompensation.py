@@ -1,6 +1,7 @@
 from .base_logger import BaseLogger
 from torchmimic.metrics import MetricMeter, AverageMeter, AUCROC, aucpr
 
+
 class DecompensationLogger(BaseLogger):
     """
     Decopensation Logger class. Used for logging, printing, and saving information about the run. Logs AUC-ROC and AUC-PR. Contains built-in wandb support.
@@ -10,7 +11,7 @@ class DecompensationLogger(BaseLogger):
     :param log_wandb: If true, wandb will be used to log metrics and configuration
     :type log_wandb: bool
     """
-    
+
     def __init__(self, exp_name, config, log_wandb=False):
         """
         Initialize DecompensationLogger
@@ -22,10 +23,12 @@ class DecompensationLogger(BaseLogger):
         """
         super().__init__(exp_name, config, log_wandb=log_wandb)
 
-        self.metrics.update({
-            "AUC-ROC": MetricMeter(AUCROC("micro")),
-            "AUC-PR": MetricMeter(aucpr),
-        })
+        self.metrics.update(
+            {
+                "AUC-ROC": MetricMeter(AUCROC("micro")),
+                "AUC-PR": MetricMeter(aucpr),
+            }
+        )
 
     def update(self, outputs, labels, loss):
         """

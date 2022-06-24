@@ -11,7 +11,7 @@ class IHMLogger(BaseLogger):
     :param log_wandb: If true, wandb will be used to log metrics and configuration
     :type log_wandb: bool
     """
-        
+
     def __init__(self, exp_name, config, log_wandb=False):
         """
         Initialize IHMLogger
@@ -22,11 +22,13 @@ class IHMLogger(BaseLogger):
         :type log_wandb: bool
         """
         super().__init__(exp_name, config, log_wandb=log_wandb)
-        
-        self.metrics.update({
-            "AUC-ROC": MetricMeter(AUCROC(None)),
-            "AUC-PR": MetricMeter(aucpr),
-        })
+
+        self.metrics.update(
+            {
+                "AUC-ROC": MetricMeter(AUCROC(None)),
+                "AUC-PR": MetricMeter(aucpr),
+            }
+        )
 
     def update(self, outputs, labels, loss):
         """

@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from torchmimic.metrics import AverageMeter, MetricMeter
 from torchmimic.utils import create_exp_dir
 
+
 class BaseLogger(ABC):
     """
     Base Logger class. Used for logging, printing, and saving information about the run. Contains built-in wandb support.
@@ -17,7 +18,7 @@ class BaseLogger(ABC):
     :param log_wandb: If true, wandb will be used to log metrics and configuration
     :type log_wandb: bool
     """
-    
+
     def __init__(self, exp_name, config, log_wandb=False):
         """
         Initialize BaseLogger
@@ -45,14 +46,14 @@ class BaseLogger(ABC):
         self.metrics = {
             "Loss": AverageMeter(),
         }
-        
+
     def __del__(self):
         """
         Destructor for BaseLogger. Finishes wandb if log_wandb is true
         """
         if self.log_wandb:
             wandb.finish()
-        
+
     @abstractmethod
     def update(self, outputs, labels, loss):
         """
@@ -85,7 +86,7 @@ class BaseLogger(ABC):
         :param split: The split of the data. "Train" or "Eval"
         :type split: str
         """
-        
+
         assert split == "Train" or split == "Eval"
 
         result_str = split + ": "

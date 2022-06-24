@@ -33,12 +33,12 @@ class PhenotypingBenchmark:
         self.model = model
         self.device = device
         self.report_freq = report_freq
-        
+
         config = {}
         config.update(model.get_config())
         config.update(self.get_config())
 
-        self.logger = PhenotypingLogger(exp_name+"_ph", config, wandb)
+        self.logger = PhenotypingLogger(exp_name + "_ph", config, wandb)
 
         torch.cuda.set_device(self.device)
 

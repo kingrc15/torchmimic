@@ -11,7 +11,7 @@ class PhenotypingLogger(BaseLogger):
     :param log_wandb: If true, wandb will be used to log metrics and configuration
     :type log_wandb: bool
     """
-    
+
     def __init__(self, exp_name, config, log_wandb=False):
         """
         Initialize PhenotypingLogger
@@ -21,14 +21,16 @@ class PhenotypingLogger(BaseLogger):
         :param log_wandb: If true, wandb will be used to log metrics and configuration
         :type log_wandb: bool
         """
-        
+
         super().__init__(exp_name, config, log_wandb=log_wandb)
 
-        self.metrics.update({
-            "AUC-ROC Micro": MetricMeter(AUCROC("micro")),
-            "AUC-ROC Macro": MetricMeter(AUCROC("macro")),
-        })
-        
+        self.metrics.update(
+            {
+                "AUC-ROC Micro": MetricMeter(AUCROC("micro")),
+                "AUC-ROC Macro": MetricMeter(AUCROC("macro")),
+            }
+        )
+
     def update(self, outputs, labels, loss):
         """
         Update loss, AUC-ROC macro, and AUC-ROC micro
@@ -40,7 +42,7 @@ class PhenotypingLogger(BaseLogger):
         :param loss: Loss from the training iteration.
         :type loss: float
         """
-        
+
         batch_size = outputs.size(0)
 
         label_tmp = labels.cpu().numpy()

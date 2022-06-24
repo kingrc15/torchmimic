@@ -11,7 +11,7 @@ class LOSLogger(BaseLogger):
     :param log_wandb: If true, wandb will be used to log metrics and configuration
     :type log_wandb: bool
     """
-    
+
     def __init__(self, exp_name, config, log_wandb=False):
         """
         Initialize LOSLogger
@@ -23,10 +23,12 @@ class LOSLogger(BaseLogger):
         """
         super().__init__(exp_name, config, log_wandb=log_wandb)
 
-        self.metrics.update({
-            "Cohen Kappa": MetricMeter(kappa),
-            "MAD": MetricMeter(mae),
-        })
+        self.metrics.update(
+            {
+                "Cohen Kappa": MetricMeter(kappa),
+                "MAD": MetricMeter(mae),
+            }
+        )
 
     def update(self, outputs, labels, loss):
         """
@@ -39,7 +41,7 @@ class LOSLogger(BaseLogger):
         :param loss: Loss from the training iteration.
         :type loss: float
         """
-        
+
         batch_size = outputs.size(0)
 
         label_tmp = labels.cpu().numpy()

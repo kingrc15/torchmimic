@@ -24,7 +24,7 @@ class PhenotypingDataset(BaseDataset):
     :param n_samples: number of samples to use. If None, all the data is used
     :type steps: int
     """
-    
+
     def __init__(
         self,
         root,

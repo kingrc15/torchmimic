@@ -26,7 +26,7 @@ class LOSDataset(BaseDataset):
     :param n_samples: number of samples to use. If None, all the data is used
     :type steps: int
     """
-    
+
     def __init__(
         self,
         root,
@@ -46,7 +46,7 @@ class LOSDataset(BaseDataset):
         :param n_samples: number of samples to use. If None, all the data is used
         :type steps: int
         """
-        
+
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
         self._read_data(root, listfile)
         self._load_data(n_samples)
