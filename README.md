@@ -1,6 +1,6 @@
 # MIMIC Benchmark in PyTorch
 
-MIMIC Benchmark reimplemented in PyTorch. For examples and documentation checkout:  https://torchmimic.readthedocs.io/en/stable/
+MIMIC Benchmark reimplemented in PyTorch. For examples and documentation checkout:  https://torchmimic.readthedocs.io/en/latest/
 
 ## Installation
 
