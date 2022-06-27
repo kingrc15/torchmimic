@@ -38,7 +38,7 @@ setuptools.setup(
     extras_require={
         "local": ["pytest","pypyr","black","setuptools","sphinx"],
     },
-    python_requires='~=3.7',
+    python_requires='~=3.8',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
