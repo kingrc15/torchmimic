@@ -28,9 +28,9 @@ This library contains PyTorch datasets that will load your existing MIMIC Benchm
     from torchmimic.data import PhenotypingDataset
     from torchmimic.data import MultitaskDataset
     
-    root_idr = "/path/to/your/data"
-    training_dataset = DecompensationDataset(root_idr, train=True)
-    val_dataset = DecompensationDataset(root_idr, train=False)
+    root_dir = "/path/to/your/data"
+    training_dataset = DecompensationDataset(root_dir, train=True)
+    val_dataset = DecompensationDataset(root_dir, train=False)
 
 Models
 ======
