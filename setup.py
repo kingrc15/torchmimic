@@ -12,8 +12,12 @@ with open(os.path.join(here, 'torchmimic', '__init__.py')) as f:
     else:
         raise RuntimeError("Unable to find __version__ string.")
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+required = [
+    'scikit-learn',
+    'numpy'
+    'torch',
+    'wandb',
+]
 
 setuptools.setup(
     name="torchmimic",
