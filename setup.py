@@ -12,6 +12,12 @@ with open(os.path.join(here, 'torchmimic', '__init__.py')) as f:
     else:
         raise RuntimeError("Unable to find __version__ string.")
 
+required = [
+    'scikit-learn',
+    'numpy'
+    'torch',
+    'wandb',
+]
 
 setuptools.setup(
     name="torchmimic",
@@ -21,7 +27,7 @@ setuptools.setup(
     description="MIMIC Benchmark in PyTorch.",
     url="https://github.com/stmilab/mimic-benchmark-pytorch",
     packages=setuptools.find_packages(),
-    install_requires=[], # TODO
+    install_requires=required, # TODO
     python_requires='~=3.6',
     classifiers=[
         "Programming Language :: Python :: 3",
