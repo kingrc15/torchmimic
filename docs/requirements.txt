@@ -80,3 +80,4 @@ zipp==3.6.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+sphinx-book-theme==0.2.0

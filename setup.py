@@ -14,10 +14,14 @@ with open(os.path.join(here, 'torchmimic', '__init__.py')) as f:
 
 required = [
     'scikit-learn',
-    'numpy'
     'torch',
+    'numpy',
     'wandb',
 ]
+
+def read(fname='README.md'):
+  with open(os.path.join(os.path.dirname(__file__), fname), encoding='utf-8') as cfile:
+    return cfile.read()
 
 setuptools.setup(
     name="torchmimic",
@@ -25,9 +29,15 @@ setuptools.setup(
     author="Ryan King",
     author_email="kingrc15@tamu.edu",
     description="MIMIC Benchmark in PyTorch.",
-    url="https://github.com/stmilab/mimic-benchmark-pytorch",
+    license = "MIT",
+    long_description=read('README.md'),
+    long_description_content_type='text/markdown',
+    url="https://github.com/kingrc15/torchmimic",
     packages=setuptools.find_packages(),
-    install_requires=required, # TODO
+    install_requires=required,
+    extras_require={
+        "local": ["pytest","pypyr","black","setuptools","sphinx"],
+    },
     python_requires='~=3.6',
     classifiers=[
         "Programming Language :: Python :: 3",

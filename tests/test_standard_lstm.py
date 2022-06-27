@@ -31,11 +31,11 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            sample_size=None,
+            sample_size=1000,
             wandb=True,
         )
 
-        trainer.fit(1000)
+        trainer.fit(2)
 
     def test_standard_lstm_ihm(self):
         device = 0
@@ -57,11 +57,11 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            sample_size=None,
+            sample_size=1000,
             wandb=True,
         )
 
-        trainer.fit(100)
+        trainer.fit(2)
 
     def test_standard_lstm_los(self):
         device = 0
@@ -83,12 +83,12 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            sample_size=None,
+            sample_size=1000,
             partition=10,
             wandb=True,
         )
 
-        trainer.fit(100)
+        trainer.fit(2)
 
     def test_standard_lstm_decomp(self):
         device = 0
@@ -110,11 +110,11 @@ class TestLSTM(unittest.TestCase):
             weight_decay=0,
             report_freq=200,
             device=device,
-            sample_size=None,
+            sample_size=1000,
             wandb=True,
         )
 
-        trainer.fit(100)
+        trainer.fit(2)
 
 
 #     def test_standard_lstm_multi(self):

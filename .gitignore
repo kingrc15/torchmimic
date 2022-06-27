@@ -134,3 +134,6 @@ dmypy.json
 /exp/**
 tmp
 /wandb
+
+# Pypyr pipeline
+precommit-pipeline.yaml
