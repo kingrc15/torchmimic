@@ -1,6 +1,7 @@
 import os
 import re
 import setuptools
+from pip.req import parse_requirements
 
 
 # for simplicity we actually store the version in the __version__ attribute in the source
@@ -12,6 +13,7 @@ with open(os.path.join(here, 'torchmimic', '__init__.py')) as f:
     else:
         raise RuntimeError("Unable to find __version__ string.")
 
+reqs = [str(ir.req) for ir in install_reqs]
 
 setuptools.setup(
     name="torchmimic",
@@ -21,7 +23,7 @@ setuptools.setup(
     description="MIMIC Benchmark in PyTorch.",
     url="https://github.com/stmilab/mimic-benchmark-pytorch",
     packages=setuptools.find_packages(),
-    install_requires=[], # TODO
+    install_requires=reqs, # TODO
     python_requires='~=3.6',
     classifiers=[
         "Programming Language :: Python :: 3",
