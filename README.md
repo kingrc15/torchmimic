@@ -19,7 +19,6 @@ from torchmimic.data import DecompensationDataset
 from torchmimic.data import IHMDataset
 from torchmimic.data import LOSDataset
 from torchmimic.data import PhenotypingDataset
-from torchmimic.data import MultitaskDataset
 ```
 
 ## Models
@@ -43,7 +42,6 @@ from torchmimic.benchmarks import DecompensationBenchmark
 from torchmimic.benchmarks import IHMBenchmark
 from torchmimic.benchmarks import LOSBenchmark
 from torchmimic.benchmarks import PhenotypingBenchmark
-from torchmimic.benchmarks import MultitaskBenchmark
 ```
 
 At a minimum, the benchmark need a model to be trained. You can create the model from one of our existing ones or you can create your own.
@@ -76,3 +74,18 @@ This library has built-in logging of model configurations and key metrics using 
 ### Testing
 
 - [ ] Test data for GitHub Workflow
+
+
+## Citation
+If you use 'torchmimic' in your projects, please cite the following:
+
+```latex
+@software{torchmimic,
+  author = {Ryan King},
+  month = {10},
+  title = {{torchmimic}},
+  url = {https://github.com/github/linguist},
+  version = {0.0.3},
+  year = {2022}
+}
+```

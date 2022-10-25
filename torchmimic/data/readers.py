@@ -284,7 +284,10 @@ class MultitaskReader(Reader):
             x = x.split(";")
             if x[0] == "":
                 return ([], [])
-            return (list(map(int, x[: len(x) // 2])), list(map(int, x[len(x) // 2 :])))
+            return (
+                list(map(int, x[: len(x) // 2])),
+                list(map(int, x[len(x) // 2 :])),
+            )
 
         self._data = [
             (

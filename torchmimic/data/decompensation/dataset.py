@@ -29,6 +29,7 @@ class DecompensationDataset(BaseDataset):
         self,
         root,
         train=True,
+        transform=None,
         n_samples=None,
     ):
         """
@@ -41,6 +42,8 @@ class DecompensationDataset(BaseDataset):
         :param n_samples: number of samples to use. If None, all the data is used
         :type steps: int
         """
+        super().__init__(transform=transform)
+
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
 
         self._read_data(root, listfile)

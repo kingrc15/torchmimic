@@ -115,4 +115,7 @@ class BaseLogger(ABC):
         """
         Saves the provides models to the experiment path
         """
-        torch.save(model.state_dict(), os.path.join(self.experiment_path, "weights.pt"))
+        torch.save(
+            model.state_dict(),
+            os.path.join(self.experiment_path, "weights.pt"),
+        )

@@ -38,7 +38,9 @@ class StandardLSTM(nn.Module):
             linear_input *= 2
 
         self.final_layer = nn.Sequential(
-            nn.Dropout(dropout_rate), nn.Linear(linear_input, n_classes), nn.Sigmoid()
+            nn.Dropout(dropout_rate),
+            nn.Linear(linear_input, n_classes),
+            nn.Sigmoid(),
         )
 
     def forward(self, data):
@@ -46,11 +48,16 @@ class StandardLSTM(nn.Module):
         lens = data[1]
         packed = pack_padded_sequence(seq, lens, batch_first=True, enforce_sorted=False)
 
-        z, (_, _) = self.lstm_layer(packed)
+        h_dim = 2 if self.bidirectional else 1
+
+        z, (ht, ct) = self.lstm_layer(packed)
 
         seq_unpacked, lens_unpacked = pad_packed_sequence(z, batch_first=True)
+
         output = self.final_layer(
-            torch.vstack([seq_unpacked[i, int(l) - 1] for i, l in enumerate(lens)])
+            torch.vstack(
+                [seq_unpacked[i, int(l) - 1] for i, l in enumerate(lens_unpacked)]
+            )
         )
 
         return output

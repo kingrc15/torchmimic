@@ -7,11 +7,10 @@ from torch.nn.utils.rnn import pad_sequence
 
 
 def pad_colalte(batch):
-    xx, yy, lens = zip(*batch)
-    x = pad_sequence(xx, batch_first=True, padding_value=-np.inf)
+    xx, yy, lens, mask = zip(*batch)
+    x = pad_sequence(xx, batch_first=True)
     y = torch.stack(yy, dim=0)
 
-    mask = (x == -np.inf)[:, :, 0]
     return x, y, lens, mask
 
 

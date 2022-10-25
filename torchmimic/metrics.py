@@ -71,7 +71,8 @@ def balanced_accuracy(true, pred):
 
 def mae(true, pred):
     """
-    Returns the Mean Absolute Error/Deviation for the provided true and predicted values
+    Returns the Mean Absolute Error/Deviation for the provided
+    true and predicted values
 
     :param true: true values
     :type true: np.array

@@ -13,7 +13,9 @@ class Discretizer:
         impute_strategy="zero",
         start_time="zero",
         config_path=os.path.join(
-            os.path.dirname(__file__), "discretizers", "discretizer_config.json"
+            os.path.dirname(__file__),
+            "discretizers",
+            "discretizer_config.json",
         ),
     ):
 
@@ -116,7 +118,12 @@ class Discretizer:
 
         # impute missing values
 
-        if self._impute_strategy not in ["zero", "normal_value", "previous", "next"]:
+        if self._impute_strategy not in [
+            "zero",
+            "normal_value",
+            "previous",
+            "next",
+        ]:
             raise ValueError("impute strategy is invalid")
 
         if self._impute_strategy in ["normal_value", "previous"]:
