@@ -140,3 +140,5 @@ tmp
 precommit-pipeline.yaml
 
 .pypirc
+torchmimic_dev/*
+torchmimic_dev/**
