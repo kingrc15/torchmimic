@@ -1,5 +1,7 @@
 import unittest
 
+import torchmimic.data
+
 from torchmimic.benchmarks import (
     IHMBenchmark,
     DecompensationBenchmark,
@@ -32,7 +34,7 @@ class TestLSTM(unittest.TestCase):
             report_freq=200,
             device=device,
             sample_size=1000,
-            wandb=True,
+            wandb=False,
         )
 
         trainer.fit(2)
@@ -58,7 +60,7 @@ class TestLSTM(unittest.TestCase):
             report_freq=200,
             device=device,
             sample_size=1000,
-            wandb=True,
+            wandb=False,
         )
 
         trainer.fit(2)
@@ -85,7 +87,7 @@ class TestLSTM(unittest.TestCase):
             device=device,
             sample_size=1000,
             partition=10,
-            wandb=True,
+            wandb=False,
         )
 
         trainer.fit(2)
@@ -111,7 +113,7 @@ class TestLSTM(unittest.TestCase):
             report_freq=200,
             device=device,
             sample_size=1000,
-            wandb=True,
+            wandb=False,
         )
 
         trainer.fit(2)

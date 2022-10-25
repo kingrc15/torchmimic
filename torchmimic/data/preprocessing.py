@@ -13,7 +13,9 @@ class Discretizer:
         impute_strategy="zero",
         start_time="zero",
         config_path=os.path.join(
-            os.path.dirname(__file__), "discretizers", "discretizer_config.json"
+            os.path.dirname(__file__),
+            "discretizers",
+            "discretizer_config.json",
         ),
     ):
 
@@ -77,7 +79,9 @@ class Discretizer:
 
         data = np.zeros(shape=(N_bins, cur_len), dtype=float)
         mask = np.zeros(shape=(N_bins, N_channels), dtype=int)
-        original_value = [["" for j in range(N_channels)] for i in range(N_bins)]
+        original_value = [
+            ["" for j in range(N_channels)] for i in range(N_bins)
+        ]
         total_data = 0
         unused_data = 0
 
@@ -116,7 +120,12 @@ class Discretizer:
 
         # impute missing values
 
-        if self._impute_strategy not in ["zero", "normal_value", "previous", "next"]:
+        if self._impute_strategy not in [
+            "zero",
+            "normal_value",
+            "previous",
+            "next",
+        ]:
             raise ValueError("impute strategy is invalid")
 
         if self._impute_strategy in ["normal_value", "previous"]:
@@ -154,7 +163,9 @@ class Discretizer:
                         imputed_value = prev_values[channel_id][-1]
                     write(data, bin_id, channel, imputed_value, begin_pos)
 
-        empty_bins = np.sum([1 - min(1, np.sum(mask[i, :])) for i in range(N_bins)])
+        empty_bins = np.sum(
+            [1 - min(1, np.sum(mask[i, :])) for i in range(N_bins)]
+        )
         self._done_count += 1
         self._empty_bins_sum += empty_bins / (N_bins + eps)
         self._unused_data_sum += unused_data / (total_data + eps)

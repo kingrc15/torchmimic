@@ -109,6 +109,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+torch_dev/
 
 # Spyder project settings
 .spyderproject
@@ -137,3 +138,5 @@ tmp
 
 # Pypyr pipeline
 precommit-pipeline.yaml
+
+.pypirc

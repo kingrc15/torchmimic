@@ -69,18 +69,18 @@ class Multitask_Trainer:
             start_time="zero",
         )
 
-        discretizer_header = discretizer.transform(train_reader.read_example(0)["X"])[
-            1
-        ].split(",")
+        discretizer_header = discretizer.transform(
+            train_reader.read_example(0)["X"]
+        )[1].split(",")
         cont_channels = [
             i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1
         ]
 
         normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = (
-            "../normalizers/mult_ts1.0.input_str:previous.start_time:zero.normalizer"
+        normalizer_state = "../normalizers/mult_ts1.0.input_str:previous.start_time:zero.normalizer"
+        normalizer_state = os.path.join(
+            os.path.dirname(__file__), normalizer_state
         )
-        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         normalizer.load_params(normalizer_state)
 
         train_data_gen = BatchGen(
@@ -103,7 +103,9 @@ class Multitask_Trainer:
             10,
         )
 
-        kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
+        kwargs = (
+            {"num_workers": workers, "pin_memory": True} if self.device else {}
+        )
 
         self.train_loader = DataLoader(
             train_data_gen,
@@ -136,7 +138,9 @@ class Multitask_Trainer:
         for epoch in range(epochs):
             self.model.train()
             self.logger.reset()
-            for batch_idx, (data, label, lens, mask) in enumerate(self.train_loader):
+            for batch_idx, (data, label, lens, mask) in enumerate(
+                self.train_loader
+            ):
                 data = data.to(self.device)
                 label = label.to(self.device)
 
@@ -149,14 +153,18 @@ class Multitask_Trainer:
                 self.logger.update(output, label, loss)
 
                 if (batch_idx + 1) % self.report_freq == 0:
-                    print(f"Train: epoch: {epoch+1}, loss = {self.logger.get_loss()}")
+                    print(
+                        f"Train: epoch: {epoch+1}, loss = {self.logger.get_loss()}"
+                    )
 
             self.logger.print_metrics(epoch, split="Train")
 
             self.model.eval()
             self.logger.reset()
             with torch.no_grad():
-                for batch_idx, (data, label, lens, mask) in enumerate(self.test_loader):
+                for batch_idx, (data, label, lens, mask) in enumerate(
+                    self.test_loader
+                ):
                     data = data.to(self.device)
                     label = label.to(self.device)
 

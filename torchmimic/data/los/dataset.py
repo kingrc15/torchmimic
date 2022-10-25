@@ -32,6 +32,7 @@ class LOSDataset(BaseDataset):
         root,
         train=True,
         partition=10,
+        transform=None,
         n_samples=None,
     ):
         """
@@ -46,6 +47,7 @@ class LOSDataset(BaseDataset):
         :param n_samples: number of samples to use. If None, all the data is used
         :type steps: int
         """
+        super().__init__(transform=transform)
 
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
         self._read_data(root, listfile)
@@ -76,16 +78,18 @@ class LOSDataset(BaseDataset):
 
         self.normalizer = Normalizer(fields=cont_channels)
         normalizer_state = "../normalizers/los_ts1.0.input_str:previous.start_time:zero.n5e4.normalizer"
-        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
+        normalizer_state = os.path.join(
+            os.path.dirname(__file__), normalizer_state
+        )
         self.normalizer.load_params(normalizer_state)
 
     def __getitem__(self, idx):
         x = self.data[idx]
-        sl = self.seq_lens[idx]
+        sl = len(x)
 
         if self.partition == 10:
             y = get_bin_custom(self.labels[idx], 10)
         else:
             y = self.labels[idx]
 
-        return x, y, sl
+        return x, y, sl, None

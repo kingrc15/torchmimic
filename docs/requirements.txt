@@ -73,11 +73,13 @@ urllib3==1.26.9
     # via
     #   requests
     #   sentry-sdk
-wandb==0.12.19
+wandb==0.12.20
     # via torchmimic (setup.py)
 zipp==3.6.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+sphinx-book-theme==0.2.0
+sphinx-book-theme==0.2.0
 sphinx-book-theme==0.2.0

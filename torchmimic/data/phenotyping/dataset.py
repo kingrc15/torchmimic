@@ -29,6 +29,7 @@ class PhenotypingDataset(BaseDataset):
         self,
         root,
         train=True,
+        transform=None,
         n_samples=None,
     ):
         """
@@ -41,6 +42,8 @@ class PhenotypingDataset(BaseDataset):
         :param n_samples: number of samples to use. If None, all the data is used
         :type steps: int
         """
+        super().__init__(transform=transform)
+
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
 
         self._read_data(root, listfile)
@@ -69,8 +72,8 @@ class PhenotypingDataset(BaseDataset):
         ]
 
         self.normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = (
-            "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
+        normalizer_state = "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
+        normalizer_state = os.path.join(
+            os.path.dirname(__file__), normalizer_state
         )
-        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         self.normalizer.load_params(normalizer_state)

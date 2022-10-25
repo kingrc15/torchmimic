@@ -7,4 +7,4 @@ build:
 
 python:
   install:
-    - requirements: docs/requirements.txt
+    - requirements: sphinx-book-theme==0.2.0

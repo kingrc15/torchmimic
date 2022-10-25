@@ -71,7 +71,8 @@ def balanced_accuracy(true, pred):
 
 def mae(true, pred):
     """
-    Returns the Mean Absolute Error/Deviation for the provided true and predicted values
+    Returns the Mean Absolute Error/Deviation for the provided
+    true and predicted values
 
     :param true: true values
     :type true: np.array
@@ -126,7 +127,9 @@ class AUCROC:
         :return: AUC-ROC score
         :rtype: int
         """
-        return roc_auc_score(true, pred, multi_class="ovr", average=self.average)
+        return roc_auc_score(
+            true, pred, multi_class="ovr", average=self.average
+        )
 
 
 class AverageMeter:
