@@ -72,8 +72,8 @@ class PhenotypingDataset(BaseDataset):
         ]
 
         self.normalizer = Normalizer(fields=cont_channels)
-        normalizer_state = "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
-        normalizer_state = os.path.join(
-            os.path.dirname(__file__), normalizer_state
+        normalizer_state = (
+            "../normalizers/ph_ts1.0.input_str:previous.start_time:zero.normalizer"
         )
+        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         self.normalizer.load_params(normalizer_state)

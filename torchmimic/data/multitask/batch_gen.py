@@ -60,13 +60,7 @@ class BatchGen(object):
             self.data["los_ts"].append(
                 [pos for pos, m in enumerate(loss[i][0]) if m == 1]
             )
-            (
-                Xs[i],
-                ihms[i],
-                decomps[i],
-                loss[i],
-                phenos[i],
-            ) = self._preprocess_single(
+            (Xs[i], ihms[i], decomps[i], loss[i], phenos[i],) = self._preprocess_single(
                 Xs[i], ts[i], ihms[i], decomps[i], loss[i], phenos[i]
             )
 
@@ -152,9 +146,7 @@ class BatchGen(object):
         # decomp
         decomp_M = self.data["decomp_M"][idx]
         decomp_y = self.data["decomp_y"][idx]
-        decomp_y = torch.FloatTensor(
-            np.expand_dims(decomp_y, axis=-1)
-        )  # (B, T, 1)
+        decomp_y = torch.FloatTensor(np.expand_dims(decomp_y, axis=-1))  # (B, T, 1)
         outputs.append(decomp_y)
 
         # los

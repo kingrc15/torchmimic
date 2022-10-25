@@ -206,8 +206,7 @@ class PhenotypingReader(Reader):
         Reader.__init__(self, dataset_dir, listfile)
         self._data = [line.split(",") for line in self._data]
         self._data = [
-            (mas[0], float(mas[1]), list(map(int, mas[2:])))
-            for mas in self._data
+            (mas[0], float(mas[1]), list(map(int, mas[2:]))) for mas in self._data
         ]
 
     def _read_timeseries(self, ts_filename):

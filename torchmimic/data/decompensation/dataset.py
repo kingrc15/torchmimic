@@ -73,7 +73,5 @@ class DecompensationDataset(BaseDataset):
 
         self.normalizer = Normalizer(fields=cont_channels)
         normalizer_state = "../normalizers/decomp_ts1.0.input_str:previous.n1e5.start_time:zero.normalizer"
-        normalizer_state = os.path.join(
-            os.path.dirname(__file__), normalizer_state
-        )
+        normalizer_state = os.path.join(os.path.dirname(__file__), normalizer_state)
         self.normalizer.load_params(normalizer_state)

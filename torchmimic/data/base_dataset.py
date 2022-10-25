@@ -43,9 +43,7 @@ class BaseDataset(ABC):
 
         # data = [self.discretizer.transform(X, end=t)[0] for (X, t) in zip(data, ts)]
         if self.normalizer is not None:
-            self.data = [
-                torch.Tensor(self.normalizer.transform(X)) for X in data_tmp
-            ]
+            self.data = [torch.Tensor(self.normalizer.transform(X)) for X in data_tmp]
         ys = torch.FloatTensor(ys)
         self.labels = ys
         self.ts = ts

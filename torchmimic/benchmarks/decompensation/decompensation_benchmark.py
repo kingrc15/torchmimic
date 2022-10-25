@@ -55,9 +55,7 @@ class DecompensationBenchmark:
             n_samples=sample_size,
         )
 
-        kwargs = (
-            {"num_workers": workers, "pin_memory": True} if self.device else {}
-        )
+        kwargs = {"num_workers": workers, "pin_memory": True} if self.device else {}
 
         self.train_loader = DataLoader(
             train_dataset,
@@ -90,9 +88,7 @@ class DecompensationBenchmark:
         for epoch in range(epochs):
             self.model.train()
             self.logger.reset()
-            for batch_idx, (data, label, lens, mask) in enumerate(
-                self.train_loader
-            ):
+            for batch_idx, (data, label, lens, mask) in enumerate(self.train_loader):
                 data = data.to(self.device)
                 label = label.to(self.device)
 
@@ -105,18 +101,14 @@ class DecompensationBenchmark:
                 self.logger.update(output, label, loss)
 
                 if (batch_idx + 1) % self.report_freq == 0:
-                    print(
-                        f"Train: epoch: {epoch+1}, loss = {self.logger.get_loss()}"
-                    )
+                    print(f"Train: epoch: {epoch+1}, loss = {self.logger.get_loss()}")
 
             self.logger.print_metrics(epoch, split="Train")
 
             self.model.eval()
             self.logger.reset()
             with torch.no_grad():
-                for batch_idx, (data, label, lens, mask) in enumerate(
-                    self.test_loader
-                ):
+                for batch_idx, (data, label, lens, mask) in enumerate(self.test_loader):
                     data = data.to(self.device)
                     label = label.to(self.device)
 

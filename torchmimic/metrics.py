@@ -127,9 +127,7 @@ class AUCROC:
         :return: AUC-ROC score
         :rtype: int
         """
-        return roc_auc_score(
-            true, pred, multi_class="ovr", average=self.average
-        )
+        return roc_auc_score(true, pred, multi_class="ovr", average=self.average)
 
 
 class AverageMeter:

@@ -46,9 +46,7 @@ class StandardLSTM(nn.Module):
     def forward(self, data):
         seq = data[0]
         lens = data[1]
-        packed = pack_padded_sequence(
-            seq, lens, batch_first=True, enforce_sorted=False
-        )
+        packed = pack_padded_sequence(seq, lens, batch_first=True, enforce_sorted=False)
 
         h_dim = 2 if self.bidirectional else 1
 
@@ -58,10 +56,7 @@ class StandardLSTM(nn.Module):
 
         output = self.final_layer(
             torch.vstack(
-                [
-                    seq_unpacked[i, int(l) - 1]
-                    for i, l in enumerate(lens_unpacked)
-                ]
+                [seq_unpacked[i, int(l) - 1] for i, l in enumerate(lens_unpacked)]
             )
         )
 
