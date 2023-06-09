@@ -52,7 +52,9 @@ class BatchGen(object):
         self.data["names"] = ret["name"]
         self.data["decomp_ts"] = []
         self.data["los_ts"] = []
-
+        
+        # fmt: off
+        
         for i in range(N):
             self.data["decomp_ts"].append(
                 [pos for pos, m in enumerate(decomps[i][0]) if m == 1]
@@ -167,3 +169,4 @@ class BatchGen(object):
 
     def __len__(self):
         return self.steps
+    # fmt: on
