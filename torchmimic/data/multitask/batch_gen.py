@@ -46,13 +46,13 @@ class BatchGen(object):
         loss = ret["los"]
         phenos = ret["pheno"]
         decomps = ret["decomp"]
-        # fmt: off
+
         self.data = dict()
         self.data["pheno_ts"] = ts
         self.data["names"] = ret["name"]
         self.data["decomp_ts"] = []
         self.data["los_ts"] = []
-        
+        # fmt: off
         for i in range(N):
             self.data["decomp_ts"].append(
                 [pos for pos, m in enumerate(decomps[i][0]) if m == 1]
@@ -60,10 +60,16 @@ class BatchGen(object):
             self.data["los_ts"].append(
                 [pos for pos, m in enumerate(loss[i][0]) if m == 1]
             )
-            (Xs[i], ihms[i], decomps[i], loss[i], phenos[i],) = self._preprocess_single(
+            (
+                Xs[i],
+                ihms[i],
+                decomps[i],
+                loss[i],
+                phenos[i],
+            ) = self._preprocess_single(
                 Xs[i], ts[i], ihms[i], decomps[i], loss[i], phenos[i]
             )
-
+        # fmt: on
         self.data["X"] = Xs
         self.data["ihm_M"] = [x[0] for x in ihms]
         self.data["ihm_y"] = [x[1] for x in ihms]
@@ -72,12 +78,9 @@ class BatchGen(object):
         self.data["los_M"] = [x[0] for x in loss]
         self.data["los_y"] = [x[1] for x in loss]
         self.data["pheno_y"] = phenos
-        
-        
-        
+
         self.seq_lens = [len(Xs[0]) for x in ihms]
 
-    # fmt: on
     def _preprocess_single(self, X, max_time, ihm, decomp, los, pheno):
         timestep = self.discretizer._timestep
         eps = 1e-6
@@ -168,7 +171,5 @@ class BatchGen(object):
 
         return inputs, outputs, self.seq_lens[idx]
 
-    # fmt: skip
     def __len__(self):
-        # fmt: skip
         return self.steps
