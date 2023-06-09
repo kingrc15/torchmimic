@@ -30,8 +30,8 @@ jobs:
           python --version
           python -m black --version
           echo $PWD ; ls
-          python -m black ./torchmimic -l 88 --check --diff --verbose
-          python -m black ./tests -l 88 --check --diff --verbose
+          python -m black ./torchmimic -l 90 --check --diff --verbose
+          python -m black ./tests -l 90 --check --diff --verbose
 
       # - name: Install torchmimic from source
       #   run: |
