@@ -74,7 +74,9 @@ class BatchGen(object):
         self.data["los_M"] = [x[0] for x in loss]
         self.data["los_y"] = [x[1] for x in loss]
         self.data["pheno_y"] = phenos
-
+        
+        # fmt: on
+        
         self.seq_lens = [len(Xs[0]) for x in ihms]
 
     def _preprocess_single(self, X, max_time, ihm, decomp, los, pheno):
@@ -166,7 +168,7 @@ class BatchGen(object):
         inputs = [X, ihm_M, decomp_M, los_M]
 
         return inputs, outputs, self.seq_lens[idx]
-
+    
     def __len__(self):
+        # fmt: skip
         return self.steps
-    # fmt: on
