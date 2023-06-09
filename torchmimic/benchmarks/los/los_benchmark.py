@@ -26,7 +26,6 @@ class LOSBenchmark:
         workers=5,
         wandb=False,
     ):
-
         self.test_batch_size = test_batch_size
         self.train_batch_size = train_batch_size
         self.learning_rate = learning_rate
@@ -84,7 +83,6 @@ class LOSBenchmark:
         self.crit = nn.CrossEntropyLoss()
 
     def fit(self, epochs):
-
         for epoch in range(epochs):
             self.model.train()
             self.logger.reset()

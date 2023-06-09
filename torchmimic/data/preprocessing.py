@@ -18,7 +18,6 @@ class Discretizer:
             "discretizer_config.json",
         ),
     ):
-
         with open(config_path) as f:
             config = json.load(f)
             self._id_to_channel = config["id_to_channel"]
