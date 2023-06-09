@@ -46,14 +46,12 @@ class BatchGen(object):
         loss = ret["los"]
         phenos = ret["pheno"]
         decomps = ret["decomp"]
-
+# fmt: off
         self.data = dict()
         self.data["pheno_ts"] = ts
         self.data["names"] = ret["name"]
         self.data["decomp_ts"] = []
         self.data["los_ts"] = []
-        
-        # fmt: off
         
         for i in range(N):
             self.data["decomp_ts"].append(
@@ -75,10 +73,10 @@ class BatchGen(object):
         self.data["los_y"] = [x[1] for x in loss]
         self.data["pheno_y"] = phenos
         
-        # fmt: on
+        
         
         self.seq_lens = [len(Xs[0]) for x in ihms]
-
+# fmt: on
     def _preprocess_single(self, X, max_time, ihm, decomp, los, pheno):
         timestep = self.discretizer._timestep
         eps = 1e-6
@@ -168,7 +166,7 @@ class BatchGen(object):
         inputs = [X, ihm_M, decomp_M, los_M]
 
         return inputs, outputs, self.seq_lens[idx]
-    
+    # fmt: skip
     def __len__(self):
         # fmt: skip
         return self.steps
