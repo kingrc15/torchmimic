@@ -55,10 +55,10 @@ class LOSDataset(BaseDataset):
         super().__init__(transform=transform)
 
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
-        
+
         if customListFile is not None:
             listfile = customListFile
-        
+
         self._read_data(root, listfile)
         self._load_data(n_samples)
 

@@ -50,7 +50,7 @@ class PhenotypingDataset(BaseDataset):
         super().__init__(transform=transform)
 
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
-        
+
         if customListFile is not None:
             listfile = customListFile
 
