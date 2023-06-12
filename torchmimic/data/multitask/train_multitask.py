@@ -132,7 +132,6 @@ class Multitask_Trainer:
         self.crit = nn.BCELoss()
 
     def fit(self, epochs):
-
         for epoch in range(epochs):
             self.model.train()
             self.logger.reset()

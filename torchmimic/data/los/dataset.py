@@ -25,6 +25,8 @@ class LOSDataset(BaseDataset):
     :type steps: int
     :param n_samples: number of samples to use. If None, all the data is used
     :type steps: int
+    :param customListFile: listfile to use. If None, use train_listfile.csv
+    :type steps: str
     """
 
     def __init__(
@@ -34,6 +36,7 @@ class LOSDataset(BaseDataset):
         partition=10,
         transform=None,
         n_samples=None,
+        customListFile=None,
     ):
         """
         Initialize LOSDataset
@@ -46,10 +49,16 @@ class LOSDataset(BaseDataset):
         :type steps: int
         :param n_samples: number of samples to use. If None, all the data is used
         :type steps: int
+        :param customListFile: listfile to use. If None, use train_listfile.csv
+        :type steps: str
         """
         super().__init__(transform=transform)
 
         listfile = "train_listfile.csv" if train else "val_listfile.csv"
+
+        if customListFile is not None:
+            listfile = customListFile
+
         self._read_data(root, listfile)
         self._load_data(n_samples)
 

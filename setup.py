@@ -12,9 +12,7 @@ except ImportError:
 # for simplicity we actually store the version in the __version__ attribute in the source
 here = os.path.realpath(os.path.dirname(__file__))
 with open(os.path.join(here, "torchmimic", "__init__.py")) as f:
-    meta_match = re.search(
-        r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M
-    )
+    meta_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M)
     if meta_match:
         version = meta_match.group(1)
     else:
