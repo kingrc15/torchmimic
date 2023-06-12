@@ -52,7 +52,7 @@ class BatchGen(object):
         self.data["names"] = ret["name"]
         self.data["decomp_ts"] = []
         self.data["los_ts"] = []
-        # fmt: off
+
         for i in range(N):
             self.data["decomp_ts"].append(
                 [pos for pos, m in enumerate(decomps[i][0]) if m == 1]
@@ -60,16 +60,10 @@ class BatchGen(object):
             self.data["los_ts"].append(
                 [pos for pos, m in enumerate(loss[i][0]) if m == 1]
             )
-            (
-                Xs[i],
-                ihms[i],
-                decomps[i],
-                loss[i],
-                phenos[i],
-            ) = self._preprocess_single(
+            (Xs[i], ihms[i], decomps[i], loss[i], phenos[i],) = self._preprocess_single(
                 Xs[i], ts[i], ihms[i], decomps[i], loss[i], phenos[i]
             )
-        # fmt: on
+
         self.data["X"] = Xs
         self.data["ihm_M"] = [x[0] for x in ihms]
         self.data["ihm_y"] = [x[1] for x in ihms]
