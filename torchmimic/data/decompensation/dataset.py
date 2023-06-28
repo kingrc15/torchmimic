@@ -60,10 +60,16 @@ class DecompensationDataset(BaseDataset):
         self.n_samples = len(self.data)
 
     def _read_data(self, root, listfile):
-        self.reader = DecompensationReader(
-            dataset_dir=os.path.join(root, "train"),
-            listfile=os.path.join(root, listfile),
-        )
+        if "test" in customListFile:
+            self.reader = DecompensationReader(
+                dataset_dir=os.path.join(root, "test"),
+                listfile=os.path.join(root, listfile),
+            )
+        else:
+            self.reader = DecompensationReader(
+                dataset_dir=os.path.join(root, "train"),
+                listfile=os.path.join(root, listfile),
+            )
 
         self.discretizer = Discretizer(
             timestep=1.0,
