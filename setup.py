@@ -2,13 +2,6 @@ import os
 import re
 import setuptools
 
-try:
-    # for pip >= 10
-    from pip._internal.req import parse_requirements
-except ImportError:
-    # for pip <= 9.0.3
-    from pip.req import parse_requirements
-
 # for simplicity we actually store the version in the __version__ attribute in the source
 here = os.path.realpath(os.path.dirname(__file__))
 with open(os.path.join(here, "torchmimic", "__init__.py")) as f:

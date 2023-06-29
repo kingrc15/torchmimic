@@ -60,7 +60,7 @@ class PhenotypingDataset(BaseDataset):
         self.n_samples = len(self.data)
 
     def _read_data(self, root, listfile):
-        if "test" in customListFile:
+        if "test" == listfile[:4]:
             self.reader = PhenotypingReader(
                 dataset_dir=os.path.join(root, "test"),
                 listfile=os.path.join(root, listfile),

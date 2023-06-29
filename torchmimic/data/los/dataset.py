@@ -66,7 +66,7 @@ class LOSDataset(BaseDataset):
         self.partition = partition
 
     def _read_data(self, root, listfile):
-        if "test" in customListFile:
+        if "test" == listfile[:4]:
             self.reader = LengthOfStayReader(
                 dataset_dir=os.path.join(root, "test"),
                 listfile=os.path.join(root, listfile),
