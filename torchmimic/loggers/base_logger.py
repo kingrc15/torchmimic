@@ -89,7 +89,7 @@ class BaseLogger(ABC):
         :type split: str
         """
 
-        assert split in ("Train", "Eval")
+        assert split in ("Train", "Eval", "Test")
 
         result_str = split + ": "
 

@@ -43,14 +43,13 @@ class BaseDataset(ABC):
 
         # data = [self.discretizer.transform(X, end=t)[0] for (X, t) in zip(data, ts)]
         if self.normalizer is not None:
-            self.data = [torch.Tensor(self.normalizer.transform(X)) for X in data_tmp]
-        ys = torch.FloatTensor(ys)
+            self.data = [self.normalizer.transform(X) for X in data_tmp]
         self.labels = ys
         self.ts = ts
         self.names = names
 
     def __getitem__(self, idx):
-        x = self.data[idx]
+        x = torch.Tensor(self.data[idx])
         sl = len(x)
         y = self.labels[idx]
         m = self.mask[idx]
